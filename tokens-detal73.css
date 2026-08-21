@@ -1,0 +1,77 @@
+/* Палитра и типографика «Деталь 73» — целевое оформление сайта мастерской.
+   Выжимка из elenaisanewleet/furniture-site @ src/styles/tokens.css.
+   Полная версия там же: тёмная тема, слой чертежей (--draw-*), текстуры. */
+
+:root{color-scheme:light dark;
+/* чернила — тёплый почти-чёрный из теней мастерской */
+--ink-900:#14120f;--ink-800:#23201b;--ink-700:#3a352e;--ink-500:#6b645a;--ink-300:#9d968a;
+/* бумага — серо-голубая, как дневной свет на штукатурке */
+--paper-0:#fafbfc;--paper-50:#eef1f3;--paper-100:#e3e8ec;--paper-200:#d2d9de;
+/* оцинковка — холодный противовес дереву */
+--zinc-100:#e4e6e7;--zinc-300:#bcc1c4;--zinc-500:#8c9196;--zinc-700:#5c6266;
+/* сосна — только фотоматы и полоса текстуры */
+--pine-100:#f3e2c6;--pine-300:#e3bc84;--pine-500:#c08a3e;--pine-700:#8a5e22;
+/* сигнал — рукоятка дрели. Одно действие на экран */
+--signal-100:#f8ded8;--signal-500:#d8402a;--signal-600:#b02f1d;--signal-700:#8f2517;
+--ok-500:#3f7d4e;--warn-500:#c08a3e;--warn-text:#8a5e22;
+
+/* роли поверхностей */
+--paper:var(--paper-50);--paper-raised:var(--paper-0);--paper-sunken:var(--paper-100);--paper-invert:var(--ink-900);
+--ink:var(--ink-900);--ink-2:var(--ink-500);--ink-3:#61666a;--ink-invert:var(--paper-0);
+--line:rgb(20 18 15 / .14);--line-strong:var(--ink-900);--line-metal:var(--zinc-300);
+--accent:var(--signal-500);--accent-ink:var(--signal-600);--accent-on-ink:#ff8f75;
+--accent-soft:var(--signal-100);--accent-on:#fff;--focus:var(--signal-500);
+
+/* типографика */
+--font-display:'Golos Text','Helvetica Neue',Arial,sans-serif;
+--font-body:'Golos Text','Helvetica Neue',Arial,sans-serif;
+--font-mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--step--2:.6875rem;--step--1:.8125rem;
+--step-0:clamp(.875rem,.82rem + .25vw,1rem);
+--step-1:clamp(1rem,.94rem + .28vw,1.1875rem);
+--step-2:clamp(1.125rem,1.03rem + .42vw,1.5rem);
+--step-3:clamp(1.375rem,1.15rem + .95vw,2rem);
+--step-4:clamp(1.75rem,1.32rem + 1.85vw,2.75rem);
+--step-5:clamp(2.25rem,1.4rem + 3.6vw,4rem);
+--step-6:clamp(2.75rem,1.5rem + 5.3vw,5.5rem);
+--display:clamp(2.5rem,1.2rem + 5.6vw,5.5rem);--display-sm:clamp(2rem,1.3rem + 3vw,4rem);
+--lh-tight:.9;--lh-display:.94;--lh-heading:1.12;--lh-body:1.55;
+--tracking-display:-.035em;--tracking-heading:-.02em;--tracking-eyebrow:.08em;
+--measure-prose:66ch;--measure-lede:34ch;
+
+/* отступы: база 4px */
+--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px;--sp-7:48px;--sp-8:64px;--sp-9:96px;--sp-10:128px;
+--section-y:clamp(3rem,1.5rem + 6vw,6rem);--section-y-sm:clamp(2rem,1.2rem + 3.2vw,3rem);
+
+/* раскладка */
+--container:1200px;--container-wide:1440px;--container-prose:66ch;--gutter:clamp(20px,.6rem + 3vw,64px);
+
+/* формы: мелкие и «штампованные», pill только у chip */
+--r-sm:2px;--r-md:4px;--r-lg:8px;--r-xl:14px;--r-pill:999px;
+
+/* глубина: теней почти нет — глубину делает волосяная линия */
+--shadow-1:0 1px 2px rgb(20 18 15 / .08);
+--shadow-2:0 12px 32px -12px rgb(20 18 15 / .24);
+--shadow-inset:inset 0 1px 0 rgb(255 255 255 / .5),inset 0 -1px 0 rgb(20 18 15 / .06);
+--shadow-press:inset 0 2px 4px rgb(20 18 15 / .16);
+
+/* угловые метки: четыре уголка вместо рамки */
+--bracket-len:14px;--bracket-w:1.5px;--bracket-color:var(--ink-900);
+
+/* движение: механическое, ничего не пружинит */
+--ease:cubic-bezier(.2,.8,.25,1);--ease-in-out:cubic-bezier(.6,0,.2,1);--ease-drawer:cubic-bezier(.16,.84,.28,1);
+--dur-1:90ms;--dur-2:140ms;--dur-3:240ms;--dur-4:420ms;
+
+/* зоны нажатия */
+--tap-min:44px;--tap-comfortable:52px;--tap-primary:60px;--header-h:60px;--sticky-cta-h:72px}
+
+@media (min-width:60rem){:root{--header-h:76px;--sticky-cta-h:0px}}
+
+/* Тёмная тема: чернила и бумага меняются ролями, оцинковка светлеет,
+   сигнал поднимается по светлоте — #d8402a на почти-чёрном даёт 4.0:1. */
+:root[data-theme='dark']{
+--paper:#16151a;--paper-raised:#1d1c22;--paper-sunken:#100f13;--paper-invert:#eef1f3;
+--ink:#eef1f3;--ink-2:#b6bbc0;--ink-3:#8b9197;--ink-invert:#14120f;
+--line:rgb(228 230 231 / .16);--line-strong:rgb(228 230 231 / .42);--line-metal:var(--zinc-700);
+--accent:#f2614a;--accent-ink:#ff8f75;--accent-on-ink:var(--signal-600);--accent-soft:#2e1713;--accent-on:#17100e;
+--focus:#ff8f75;--bracket-color:#eef1f3;--warn-text:var(--pine-300)}

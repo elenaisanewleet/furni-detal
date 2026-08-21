@@ -1,0 +1,171 @@
+<!-- @dsCard group="Master Site" viewport="1240x820" name="3D-мастерская" subtitle="Отдельная страница: виды, зоны, день и вечер" -->
+<!DOCTYPE html><html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3D-модель мастерской — Мастерская Архангельское</title>
+<meta name="description" content="Интерактивная 3D-модель основной рабочей комнаты мастерской: станки, верстак, склад фурнитуры, зона фасовки. Ульяновская область, село Архангельское.">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.184.0/build/three.module.js",
+    "three/addons/controls/OrbitControls.js": "https://unpkg.com/three@0.184.0/examples/jsm/controls/OrbitControls.js",
+    "three/addons/exporters/OBJExporter.js": "https://unpkg.com/three@0.184.0/examples/jsm/exporters/OBJExporter.js",
+    "three/addons/exporters/GLTFExporter.js": "https://unpkg.com/three@0.184.0/examples/jsm/exporters/GLTFExporter.js"
+  },
+  "integrity": {
+    "https://unpkg.com/three@0.184.0/build/three.module.js": "sha384-8FCZ1eVO6it4+pbec2aDtnTrwjWXZLJRC+MAGCIPDgsYnUrl/E0A2YlF8ioMKI/J",
+    "https://unpkg.com/three@0.184.0/build/three.core.js": "sha384-dw2ooPewaEIrAgl6oFDBmmBWCE9oW9LxRGcfwZ0hLvEprzo202wXl7vCYHRlSnOT",
+    "https://unpkg.com/three@0.184.0/examples/jsm/controls/OrbitControls.js": "sha384-4rziNxOBZKQ69i+w+f89KJ55TCYquwchVbByQwmaOeIOXdOU2PLDn3kOfXHwIJC9",
+    "https://unpkg.com/three@0.184.0/examples/jsm/exporters/OBJExporter.js": "sha384-nbwtoZENJD3Vq+ACK0CuGQdPMuDWHkamC2KJD70EV5nfg6jQjfppKOea07YJN+N3",
+    "https://unpkg.com/three@0.184.0/examples/jsm/exporters/GLTFExporter.js": "sha384-VofkvpG6HERhFCYbsUOHeNXBCqID2nfqkQqnVzE1jc/oPcz+qJ13ADdXH08hE+cQ"
+  }
+}
+</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400..900&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>*{box-sizing:border-box}
+:root{--paper:#eef1f3;--surface:#fafbfc;--ink:#14120f;--dim:#5c6266;--line:#d2d9de;--sun:#d8402a;--sun-deep:#b02f1d;--sage:#d8402a;--sage-1:#e3e8ec}
+html,body{height:100%;margin:0}
+body{background:var(--paper);color:var(--ink);font-family:"Golos Text",sans-serif;display:flex;flex-direction:column;overflow:hidden}
+a{color:var(--ink);text-decoration:none}
+h1,h2,h3,b.s{font-family:"Golos Text",sans-serif;font-weight:700}
+.bar{display:flex;align-items:center;gap:18px;padding:14px 26px;border-bottom:1px solid var(--line);background:var(--paper);z-index:5}
+.bar .logo{display:flex;align-items:center;gap:11px;font-family:"Golos Text",sans-serif;font-weight:700;font-size:18px}
+.ring{width:16px;height:16px;border:3px solid var(--sun);border-radius:50%}
+.bar .right{margin-left:auto;display:flex;gap:12px;align-items:center;font-size:15px}
+.btn{display:inline-flex;align-items:center;padding:12px 20px;background:var(--sun);color:#fff;font-weight:700;font-size:15px;border-radius:3px;white-space:nowrap}
+.btn:hover{background:var(--sun-deep);color:#fff}
+.btn.line{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line);color:var(--ink)}
+.btn.line:hover{background:var(--sage-1);color:var(--ink)}
+main{flex:1;display:grid;grid-template-columns:1fr 330px;min-height:0}
+.stage-wrap{position:relative;min-height:0;background:var(--sage-1)}
+three-d-stage:not(:defined){visibility:hidden}
+three-d-stage{position:absolute;inset:0;width:100%;height:100%}
+.views{position:absolute;left:18px;top:18px;right:18px;display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;z-index:3;scrollbar-width:thin}
+.chip{background:rgba(238,241,243,.92);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600;cursor:pointer;font-family:"Golos Text",sans-serif;color:var(--ink);white-space:nowrap}
+.chip:hover{border-color:var(--sun)}
+.chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.light{position:absolute;left:18px;bottom:18px;display:flex;gap:6px;z-index:3;background:rgba(238,241,243,.92);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:999px;padding:4px}
+.light button{border:none;background:transparent;border-radius:999px;padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer;font-family:"Golos Text",sans-serif;color:var(--ink)}
+.light button.on{background:var(--sun);color:#fff}
+aside{border-left:1px solid var(--line);background:var(--surface);overflow-y:auto;padding:24px 22px 40px}
+aside h2{font-size:24px;margin:0 0 6px}
+aside .sub{color:var(--dim);font-size:15px;margin:0 0 20px}
+.zones{display:grid;gap:8px}
+.zone{width:100%;text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:14px 16px;cursor:pointer;font:inherit;color:inherit;transition:border-color .15s ease}
+.zone:hover{border-color:var(--sun)}
+.zone.on{border-color:var(--sun);background:var(--sage-1)}
+.zone b{font-family:"Golos Text",sans-serif;font-size:17px;display:block}
+.zone p{margin:8px 0 0;color:var(--dim);font-size:14.5px;max-height:0;overflow:hidden;opacity:0;transition:max-height .35s ease,opacity .25s ease,margin .3s ease}
+.zone.on p{max-height:220px;opacity:1}
+.hint{color:var(--dim);font-size:13px;margin-top:18px}
+@media(max-width:900px){main{grid-template-columns:1fr;grid-template-rows:minmax(320px,52vh) 1fr}aside{border-left:none;border-top:1px solid var(--line)}body{overflow:auto}}
+</style></head><body>
+
+<div class="bar">
+ <a class="logo" href="index.html"><span class="ring"></span>Мастерская Архангельское</a>
+ <div class="right"><a class="btn line" href="index.html">← На сайт</a><a class="btn line" href="katalog-3d.html">Каталог объектов</a><a class="btn" href="https://wa.me/79851982945">Написать в WhatsApp</a></div>
+</div>
+
+<main>
+ <div class="stage-wrap">
+  <three-d-stage id="stage" name="masterskaya-room2" background="#fdf6e0"></three-d-stage>
+  <div class="views" id="views"></div>
+  <div class="light" id="light"><button data-mode="day" class="on">День</button><button data-mode="night">Вечер</button></div>
+ </div>
+ <aside>
+  <h2>Мастерская целиком</h2>
+  <p class="sub">Три помещения и вид снаружи, собранные по фотографиям. Сверху — виды камеры по кадрам, справа — зоны: нажмите, и камера подлетит к нужному месту.</p>
+  <div class="zones" id="zones"></div>
+  <p class="hint">Тянуть — вращать, колесо — приближать, правая кнопка — сдвиг.</p>
+ </aside>
+</main>
+
+<script src="model3d/three-d-stage.js"></script>
+<script type="module">
+const stage=document.querySelector('#stage');
+const ready=await stage.ready;
+const THREE=ready.THREE;
+window.__WORKSHOP_THREE__=THREE;
+const { buildMaster, HOTSPOTS, VIEWS, PENDANT_POSITIONS }=await import('./model3d/workshop-model.js');
+stage.setObject(buildMaster());
+
+const camera=stage._camera, controls=stage._controls, scene=stage._scene;
+const sr=stage.shadowRoot;
+const note=sr.querySelector('.note'); if(note) note.style.display='none';
+const toolbar=sr.querySelector('.toolbar');
+if(toolbar){const b=toolbar.querySelectorAll('button');if(b[0])b[0].textContent='Скачать OBJ + MTL';if(b[1])b[1].textContent='Скачать GLB';}
+
+/* плавный перелёт камеры */
+let flight=null;
+function flyTo(cam,target){
+  const p0=camera.position.clone(), t0=controls.target.clone();
+  const p1=new THREE.Vector3().fromArray(cam), t1=new THREE.Vector3().fromArray(target);
+  const t=performance.now(), DUR=850;
+  if(flight)clearInterval(flight);
+  // таймер, а не requestAnimationFrame: в неактивной вкладке rAF не вызывается
+  flight=setInterval(function(){
+    const k=Math.min(1,(performance.now()-t)/DUR);
+    const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    camera.position.lerpVectors(p0,p1,e);
+    controls.target.lerpVectors(t0,t1,e);
+    controls.update();
+    if(k>=1){clearInterval(flight);flight=null;}
+  },16);
+}
+
+/* виды */
+const vwrap=document.getElementById('views');
+VIEWS.forEach(function(v,i){
+  const b=document.createElement('button');
+  b.className='chip'+(i===0?' on':''); b.textContent=v.label;
+  b.onclick=function(){
+    vwrap.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on')});
+    b.classList.add('on');
+    document.querySelectorAll('.zone.on').forEach(function(z){z.classList.remove('on')});
+    flyTo(v.cam,v.target);
+  };
+  vwrap.appendChild(b);
+});
+setTimeout(function(){flyTo(VIEWS[0].cam,VIEWS[0].target)},240);
+
+/* зоны-хотспоты */
+const zwrap=document.getElementById('zones');
+HOTSPOTS.forEach(function(h){
+  const b=document.createElement('button');
+  b.className='zone';
+  b.innerHTML='<b></b><p></p>';
+  b.querySelector('b').textContent=h.title;
+  b.querySelector('p').textContent=h.text;
+  b.onclick=function(){
+    const open=b.classList.contains('on');
+    zwrap.querySelectorAll('.zone').forEach(function(x){x.classList.remove('on')});
+    vwrap.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on')});
+    if(!open){b.classList.add('on');flyTo(h.cam,h.at);}
+  };
+  zwrap.appendChild(b);
+});
+
+/* день / вечер */
+const hemi=scene.children.find(function(o){return o.isHemisphereLight});
+const key=stage._key;
+const fill=scene.children.filter(function(o){return o.isDirectionalLight}).find(function(o){return o!==key});
+const bulbs=[]; stage._object.traverse(function(o){if(o.isMesh&&o.name.indexOf('pendant_bulb')===0)bulbs.push(o)});
+const lamps=PENDANT_POSITIONS.map(function(p,i){
+  const l=new THREE.PointLight(0xffc98a,0,7.5,2); l.position.set(p[0],p[1],p[2]); scene.add(l); return l;
+});
+const warm=new THREE.PointLight(0xffb26a,0,6,2); warm.position.set(-2.1,1.5,0.4); scene.add(warm);
+function setLight(mode){
+  const night=mode==='night';
+  if(hemi){hemi.intensity=night?0.24:1.0;hemi.color.set(night?0x35404f:0xffffff);hemi.groundColor.set(night?0x2a221a:0xd8d2c4);}
+  if(key){key.intensity=night?0.3:2.2;key.color.set(night?0xa8bcd8:0xffffff);}
+  if(fill)fill.intensity=night?0.12:0.5;
+  lamps.forEach(function(l){l.intensity=night?9:0});
+  warm.intensity=night?4:0;
+  bulbs.forEach(function(b){if(b.material)b.material.emissiveIntensity=night?1.7:0.15});
+  if(stage._ground)stage._ground.material.opacity=night?0.1:0.18;
+  stage.style.setProperty('--stage-bg',night?'#241f1a':'#fdf6e0');
+  document.querySelectorAll('#light button').forEach(function(x){x.classList.toggle('on',x.dataset.mode===mode)});
+}
+document.querySelectorAll('#light button').forEach(function(x){x.onclick=function(){setLight(x.dataset.mode)}});
+setLight('day');
+</script>
+</body></html>

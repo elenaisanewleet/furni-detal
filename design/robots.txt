@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://furniture-detal.vercel.app/sitemap.xml
