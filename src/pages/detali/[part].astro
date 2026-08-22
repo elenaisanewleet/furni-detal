@@ -1,0 +1,264 @@
+---
+import Base from '~/layouts/Base.astro';
+import TaskForm from '~/components/TaskForm.astro';
+import RelatedLinks from '~/components/RelatedLinks.astro';
+import Faq from '~/components/Faq.astro';
+
+import { parts } from '~/data/parts';
+import { partSeo, seoParts, partHref } from '~/data/part-seo';
+import { bySlug, serviceHref } from '~/data/services';
+import { site, placeLine } from '~/data/site';
+import { faqPage, orgId } from '~/lib/schema';
+import { originOf } from '~/lib/origin';
+
+/**
+ * Страница одной детали.
+ *
+ * Ради неё и затевалась вся эта разметка: люди ищут не «мебельную
+ * фурнитуру», а «минификс что это» и «как называется рельса для ящика».
+ * Раньше эти тексты жили внутри определителя, за якорем на одной странице,
+ * — то есть одиннадцать разных запросов вели в одно и то же место.
+ *
+ * Содержание не выдумано: оно то же, что в определителе, — что деталь
+ * делает, что с ней случается, что сфотографировать.
+ */
+export function getStaticPaths() {
+  return seoParts.map((id) => ({ params: { part: id }, props: { id } }));
+}
+
+const { id } = Astro.props;
+const part = parts.find((p) => p.id === id)!;
+const seo = partSeo[id];
+
+const origin = originOf(Astro.site);
+const url = partHref(id);
+
+const service = bySlug(part.service.replace(/\//g, '')) ?? null;
+
+const breadcrumb = [
+  { name: 'Главная', href: '/' },
+  { name: 'Детали', href: '/detali/' },
+  { name: part.term, href: url },
+];
+
+/** Соседние детали — перелинковка внутри кластера, а не список всего. */
+const neighbours = seoParts
+  .filter((x) => x !== id)
+  .map((x) => parts.find((p) => p.id === x)!)
+  .filter((p) => p.place.some((pl) => part.place.includes(pl)))
+  .slice(0, 3);
+
+const also = (neighbours.length ? neighbours : parts.filter((p) => seoParts.includes(p.id) && p.id !== id).slice(0, 3)).map(
+  (p) => ({ href: partHref(p.id), label: p.term })
+);
+
+/**
+ * DefinedTerm — ровно то, чем страница является: у детали есть название,
+ * бытовые синонимы и объяснение. FAQPage добавляет к этому вопросы,
+ * которыми люди и ищут.
+ */
+const schema = [
+  {
+    '@type': 'DefinedTerm',
+    '@id': new URL(url + '#term', origin).toString(),
+    name: part.term,
+    alternateName: part.aliases,
+    description: part.what,
+    url: new URL(url, origin).toString(),
+    inDefinedTermSet: {
+      '@type': 'DefinedTermSet',
+      name: 'Детали мебели и фурнитура',
+      url: new URL('/detali/', origin).toString(),
+    },
+    publisher: { '@id': orgId(origin) },
+  },
+  faqPage([
+    { q: `Как называется ${part.said.toLowerCase()}?`, a: `${part.term}. ${part.what}` },
+    {
+      q: `Что обычно случается с деталью «${part.term.toLowerCase()}»?`,
+      a: part.symptoms.join('; ') + '.',
+    },
+    {
+      q: `Что сфотографировать, чтобы подобрать такую деталь?`,
+      a: part.shoot.join('; ') + '. Название знать не нужно — по снимку разберёмся.',
+    },
+  ]),
+];
+---
+
+<Base
+  title={seo.title}
+  description={seo.description}
+  keywords={[...part.aliases, part.term.toLowerCase(), 'Ульяновская область'].join(', ')}
+  canonical={url}
+  breadcrumb={breadcrumb}
+  schema={schema}
+>
+  <section>
+    <div class="wrap" style="padding-block:var(--sp-6) var(--section-y-md)">
+      <div class="part-top">
+        <div>
+          <div class="eyebrow">Деталь · {site.region}</div>
+          <h1>{seo.h1}</h1>
+          <p class="lead">{seo.intro}</p>
+          <div class="acts">
+            <a class="btn dark" href="#zayavka">Показать деталь</a>
+            <a class="btn line" href={site.whatsapp} rel="noopener">Написать в WhatsApp</a>
+          </div>
+        </div>
+
+        {/* Схема, а не фотография: снимков этой детали у мастерской нет,
+            а чертёж честно показывает устройство. */}
+        <div class="part-art" set:html={part.svg} />
+      </div>
+    </div>
+  </section>
+
+  <section class="warmbg">
+    <div class="wrap pad-s">
+      <div class="two">
+        <div>
+          <h2>Что это за деталь</h2>
+          <p class="what-long">{part.what}</p>
+
+          <h3 class="sub-h">Как её ещё называют</h3>
+          <p class="aliases">
+            {part.aliases.map((a, i) => <span>{i ? ', ' : ''}{a}</span>)}
+          </p>
+          <p class="note">
+            Все эти слова означают одно и то же. Знать правильное название не нужно — достаточно
+            показать деталь на снимке.
+          </p>
+        </div>
+
+        <div>
+          <h2>Что с ней обычно случается</h2>
+          <ul class="marks">
+            {part.symptoms.map((s) => <li>{s}</li>)}
+          </ul>
+
+          <h3 class="sub-h">Что сфотографировать</h3>
+          <ul class="marks">
+            {part.shoot.map((s) => <li>{s}</li>)}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap pad-s">
+      <h2>Показать деталь</h2>
+      <p class="sub">
+        Снимите по списку выше — этого хватит, чтобы подобрать такую же или совместимую. {placeLine},
+        работаем по всей области.
+      </p>
+      <TaskForm
+        topic={`Деталь: ${part.term}`}
+        title="Покажите эту деталь"
+        placeholder={`${part.said.toLowerCase()} — нужна замена`}
+      />
+    </div>
+  </section>
+
+  <section class="warmbg">
+    <div class="wrap pad-s">
+      <h2>Вопросы и ответы</h2>
+      <div style="margin-block-start:var(--sp-6)">
+        <Faq
+          items={[
+            { q: `Как называется ${part.said.toLowerCase()}?`, a: `${part.term}. ${part.what}` },
+            {
+              q: 'А если я не знаю названия?',
+              a: 'Это обычное дело и мешает только на словах. Пришлите фотографию — деталь опознаём по снимку, а название потом скажем сами.',
+            },
+            {
+              q: 'Можно подобрать по образцу?',
+              a: 'Да. Привезите деталь или пришлите фото с размерами — подберём такую же или совместимую замену.',
+            },
+            {
+              q: 'Как узнать, есть ли такая деталь?',
+              a: 'Склад разобран по типам и размерам, но наличие лучше уточнить перед поездкой: напишите, что именно нужно, или пришлите фото.',
+            },
+          ]}
+        />
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap pad-s">
+      <h2>Рядом</h2>
+      <div style="margin-block-start:var(--sp-6)">
+        <RelatedLinks
+          links={[
+            ...also,
+            ...(service ? [{ href: serviceHref(service.slug), label: service.label }] : []),
+            { href: '/podbor-detali/', label: 'Определитель детали' },
+          ]}
+        />
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .part-top {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: var(--sp-8);
+    align-items: center;
+  }
+
+  /* Чертёж лежит на бумажном мате, как в определителе. */
+  .part-art {
+    padding: var(--sp-6);
+    background: var(--draw-paper);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    color: var(--draw-ink-2);
+  }
+
+  .part-art :global(svg) {
+    width: 100%;
+    height: auto;
+  }
+
+  .what-long {
+    font-size: var(--step-1);
+    color: var(--ink);
+    max-width: var(--measure-prose);
+  }
+
+  .sub-h {
+    margin-block-start: var(--sp-6);
+    font-size: var(--step-1);
+  }
+
+  .aliases {
+    margin-block-start: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--step-0);
+    color: var(--ink-2);
+  }
+
+  .marks {
+    margin-block-start: var(--sp-3);
+    padding-inline-start: var(--sp-5);
+    color: var(--ink-2);
+    font-size: var(--step-1);
+  }
+
+  .marks li + li {
+    margin-block-start: var(--sp-2);
+  }
+
+  @media (max-width: 62.5rem) {
+    .part-top {
+      grid-template-columns: 1fr;
+    }
+    .part-art {
+      max-width: 300px;
+    }
+  }
+</style>

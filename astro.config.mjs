@@ -29,6 +29,8 @@ const SITE =
 const PRIORITY = [
   [/^\/$/, 1.0],
   [/^\/podbor-detali\/$/, 0.9],
+  [/^\/detali\/$/, 0.9],
+  [/^\/detali\/[^/]+\/$/, 0.7],
   [/^\/(zakaz|stanki|kontakty)\/$/, 0.8],
   [/^\/(masterskaya-3d|katalog-3d)\/$/, 0.5],
 ];

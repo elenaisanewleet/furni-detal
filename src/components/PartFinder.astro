@@ -1,5 +1,6 @@
 ---
 import { parts, places, symptoms } from '~/data/parts';
+import { seoParts, partHref } from '~/data/part-seo';
 import Brackets from '~/components/Brackets.astro';
 
 /**
@@ -128,14 +129,20 @@ import Brackets from '~/components/Brackets.astro';
             </ul>
           </div>
         </div>
+        {/* Ссылка на страницу детали, а не только на страницу услуги:
+            у каждой детали есть свой разбор и свой запрос в поиске. */}
         <div class="acts2">
           <button class="btn dark" type="button" data-order={`${p.said} (${p.term})`}>
             Заказать эту деталь
           </button>
+          {seoParts.includes(p.id) && (
+            <a class="btn line" href={partHref(p.id)}>
+              Подробно о детали
+            </a>
+          )}
           <a class="btn line" href={p.service}>
             Подробнее о работе
           </a>
-          <span>Фото по списку слева отвечает на большинство вопросов сразу</span>
         </div>
       </article>
     ))

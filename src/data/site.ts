@@ -73,6 +73,15 @@ export const site = {
   /** Яндекс.Метрика. Пусто — счётчик не подключается. */
   metrikaId: import.meta.env.PUBLIC_METRIKA_ID || '',
 
+  /**
+   * Подтверждение прав на сайт. Коды выдают Яндекс.Вебмастер и Google
+   * Search Console; пока их нет, метатеги не выводятся вовсе.
+   */
+  verify: {
+    yandex: import.meta.env.PUBLIC_YANDEX_VERIFICATION || '',
+    google: import.meta.env.PUBLIC_GOOGLE_VERIFICATION || '',
+  },
+
   /** Ограничения совпадают с проверками на сервере. */
   upload: {
     maxFiles: 6,

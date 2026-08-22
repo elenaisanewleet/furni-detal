@@ -1,0 +1,119 @@
+---
+import Base from '~/layouts/Base.astro';
+import RelatedLinks from '~/components/RelatedLinks.astro';
+import { parts, places } from '~/data/parts';
+import { partSeo, seoParts, partHref } from '~/data/part-seo';
+import { site, placeLine } from '~/data/site';
+import { orgId } from '~/lib/schema';
+import { originOf } from '~/lib/origin';
+
+/**
+ * Индекс кластера деталей.
+ *
+ * Он же узел перелинковки: с него ссылки расходятся на одиннадцать
+ * страниц, и обратно каждая ссылается сюда через хлебные крошки. Без
+ * такого узла страницы деталей висели бы на глубине трёх кликов и
+ * собирались бы поисковиком по остаточному принципу.
+ */
+const origin = originOf(Astro.site);
+const list = seoParts.map((id) => ({ part: parts.find((p) => p.id === id)!, seo: partSeo[id] }));
+
+const breadcrumb = [
+  { name: 'Главная', href: '/' },
+  { name: 'Детали', href: '/detali/' },
+];
+
+/** Группировка по месту — тот же вход «по месту», что и в определителе. */
+const byPlace = places
+  .map((pl) => ({
+    place: pl,
+    items: list.filter(({ part }) => part.place.includes(pl.id)),
+  }))
+  .filter((g) => g.items.length);
+
+const schema = [
+  {
+    '@type': 'DefinedTermSet',
+    '@id': new URL('/detali/#set', origin).toString(),
+    name: 'Детали мебели и фурнитура',
+    description:
+      'Названия мебельных деталей и то, как их называют в быту: петля, направляющая, минификс, полкодержатель, ролик двери-купе, доводчик.',
+    url: new URL('/detali/', origin).toString(),
+    publisher: { '@id': orgId(origin) },
+    hasDefinedTerm: list.map(({ part }) => ({
+      '@type': 'DefinedTerm',
+      name: part.term,
+      alternateName: part.aliases,
+      url: new URL(partHref(part.id), origin).toString(),
+    })),
+  },
+];
+---
+
+<Base
+  title="Названия мебельных деталей: петля, направляющая, минификс"
+  description="Как называются детали мебели и как их зовут в быту: петля, рельса, минификс, полкодержатель, ролик двери-купе, доводчик. Со схемами и списком, что сфотографировать."
+  keywords="названия мебельных деталей, как называется деталь мебели, мебельная фурнитура названия, минификс, полкодержатель, направляющая, доводчик, ролик двери-купе"
+  canonical="/detali/"
+  breadcrumb={breadcrumb}
+  schema={schema}
+>
+  <section>
+    <div class="wrap" style="padding-block:var(--sp-6) var(--section-y-md)">
+      <div class="eyebrow">Справочник · {site.region}</div>
+      <h1>Как называются детали мебели</h1>
+      <p class="lead">
+        Одиннадцать деталей, из-за которых чаще всего пишут в мастерскую. У каждой — что она делает,
+        что с ней случается и что снять на фото, чтобы подобрать замену. Название знать не нужно:
+        достаточно узнать деталь на схеме.
+      </p>
+      <div class="acts">
+        <a class="btn dark" href="/podbor-detali/">Открыть определитель</a>
+        <a class="btn line" href="/zakaz/">Показать деталь</a>
+      </div>
+    </div>
+  </section>
+
+  {
+    byPlace.map(({ place, items }) => (
+      <section class="warmbg">
+        <div class="wrap pad-s">
+          <h2>{place.label} — {place.note}</h2>
+          <div class="pgrid" style="margin-block-start:var(--sp-6)">
+            {items.map(({ part }) => (
+              <a class="p" href={partHref(part.id)}>
+                <span class="art" set:html={part.svg} />
+                <span class="txt">
+                  <b>{part.said}</b>
+                  <i>{part.term}</i>
+                </span>
+                <span class="open">
+                  Что это и что снять <span aria-hidden="true">→</span>
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    ))
+  }
+
+  <section>
+    <div class="wrap pad-s">
+      <h2>Если детали в списке нет</h2>
+      <p class="sub">
+        Список не исчерпывающий — в мастерской разбирают и то, чего здесь нет. Пришлите фотографию:
+        деталь опознаём по снимку, а название скажем сами. {placeLine}, работаем по всей области.
+      </p>
+      <div style="margin-block-start:var(--sp-6)">
+        <RelatedLinks
+          links={[
+            { href: '/podbor-detali/', label: 'Определитель детали' },
+            { href: '/furnitura-i-krepezh/', label: 'Фурнитура и крепёж' },
+            { href: '/remont-mebeli/', label: 'Ремонт и доработка мебели' },
+          ]}
+        />
+      </div>
+    </div>
+  </section>
+</Base>

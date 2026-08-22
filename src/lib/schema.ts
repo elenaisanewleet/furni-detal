@@ -31,10 +31,27 @@ export function localBusiness(origin: string) {
       addressRegion: site.region,
       addressCountry: 'RU',
     },
+    image: new URL('/og.jpg', origin).toString(),
     areaServed: {
       '@type': 'AdministrativeArea',
       name: site.region,
     },
+    /* Чем мастерская занимается — списком, теми же словами, какими это
+       ищут. Не цены и не обещания: перечень тем, а не оффер. */
+    knowsAbout: [
+      'мебельная фурнитура',
+      'мебельные петли',
+      'направляющие для ящиков',
+      'эксцентриковая стяжка',
+      'полкодержатели',
+      'ролики для дверей-купе',
+      'мебельные доводчики',
+      'крепёж и резьбовые элементы',
+      'металлические узлы и кронштейны',
+      'ремонт мебели',
+      'распил и присадка',
+      'заточка инструмента',
+    ],
     makesOffer: services.map((s) => ({
       '@type': 'Offer',
       itemOffered: {

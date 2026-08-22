@@ -73,6 +73,12 @@ const nodes = [
     <meta name="geo.region" content="RU-ULY" />
     <meta name="geo.placename" content={site.locality} />
 
+    {/* Подтверждение прав в вебмастерах. Без него сайт нельзя добавить
+        в Яндекс.Вебмастер и Search Console — а без них не увидеть, по
+        каким запросам вообще приходят. Коды выдают там же. */}
+    {site.verify.yandex && <meta name="yandex-verification" content={site.verify.yandex} />}
+    {site.verify.google && <meta name="google-site-verification" content={site.verify.google} />}
+
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={site.brand.name} />
     <meta property="og:locale" content="ru_RU" />

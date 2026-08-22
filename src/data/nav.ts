@@ -28,6 +28,7 @@ export const primaryNav: NavItem[] = [
 ];
 
 export const footerLinks: NavItem[] = [
+  { href: '/detali/', label: 'Названия деталей' },
   { href: '/podbor-detali/', label: 'Подбор детали' },
   { href: '/zakaz/', label: 'Показать деталь' },
   { href: '/stanki/', label: 'Станки мастерской' },
