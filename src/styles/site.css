@@ -1,0 +1,1642 @@
+/* =========================================================================
+   Раскладка сайта
+   -------------------------------------------------------------------------
+   Экраны прототипа, переложенные на токены: пиксели ушли в --sp-*, кегли —
+   в шкалу --step-*, радиусы в --r-*, длительности в --dur-*. Имена классов
+   оставлены прежними — по ним читается и прототип, и разметка страниц.
+
+   Два правила системы, которые здесь держатся руками:
+   • фонов на странице не больше двух — бумага (--paper) и утопленная
+     полоса (--paper-sunken); всё остальное поднято на --paper-raised;
+   • глубина делается волосяной линией, а не тенью.
+   ========================================================================= */
+
+:root {
+  /* Секция прототипа — 104px, короткая — 76px. Между 320 и 1440 обе
+     тянутся, иначе на телефоне отступ съедает экран. */
+  --section-y-md: clamp(2.5rem, 1.5rem + 4vw, 4.5rem);
+}
+
+/* ---- Раскладка --------------------------------------------------------- */
+
+.wrap {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+}
+
+section {
+  border-block-end: 1px solid var(--line);
+}
+
+.pad {
+  padding-block: var(--section-y);
+}
+
+.pad-s {
+  padding-block: var(--section-y-md);
+}
+
+/* Утопленная полоса — второй и последний фон страницы. */
+.warmbg {
+  background: var(--paper-sunken);
+}
+
+.lead {
+  font-size: var(--step-2);
+  line-height: 1.45;
+  color: var(--ink-2);
+  max-width: 46ch;
+  margin-block-end: var(--sp-6);
+}
+
+.sub {
+  color: var(--ink-2);
+  font-size: var(--step-2);
+  max-width: 62ch;
+  margin-block-end: var(--sp-7);
+}
+
+.note {
+  color: var(--ink-2);
+  font-size: var(--step-0);
+  max-width: var(--measure-prose);
+  margin-block-start: var(--sp-5);
+}
+
+.acts {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.tel {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ul-2 {
+  columns: 2;
+  column-gap: var(--sp-7);
+  margin: 0;
+  padding-inline-start: var(--sp-5);
+  color: var(--ink-2);
+  font-size: var(--step-1);
+}
+
+.ul-2 li {
+  margin-block-end: var(--sp-2);
+  break-inside: avoid;
+}
+
+/* ---- Шапка -------------------------------------------------------------
+   Липкая, на полупрозрачной бумаге с размытием: это одно из двух мест на
+   сайте, где размытие оправдано — шапка действительно висит над страницей. */
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(14px);
+  border-block-end: 1px solid var(--line);
+}
+
+.bar .wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  min-height: var(--header-h);
+  padding-block: var(--sp-3);
+}
+
+/* Логотипа у мастерской нет, и рисовать его нельзя. Марка — слово,
+   набранное тяжело и плотно, со второй строкой обычным весом: так «где»
+   не спорит с «кто». Знака перед словом тоже нет — он был бы логотипом. */
+.logo {
+  display: grid;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--step-1);
+  letter-spacing: -0.05em;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.logo span {
+  font-weight: 500;
+  font-size: var(--step--1);
+  letter-spacing: 0;
+  color: var(--ink-2);
+}
+
+.logo:hover {
+  color: var(--ink);
+}
+
+.bar nav {
+  display: flex;
+  gap: var(--sp-1);
+  margin-inline-start: auto;
+  align-items: center;
+}
+
+/* :not(.btn) обязателен: без него правило шапки перекрашивает текст
+   кнопки «Заказать» в чернила по красному — 4.17:1, ниже нормы. */
+.bar nav > a:not(.btn),
+.drop > b {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-md);
+  color: var(--ink);
+  font-weight: 500;
+  font-size: var(--step-0);
+  cursor: pointer;
+  transition: background var(--dur-2) var(--ease);
+}
+
+.bar nav > a:not(.btn):hover,
+.drop:hover > b {
+  background: var(--paper-sunken);
+  color: var(--ink);
+}
+
+/* Текущий раздел — подчёркнут сигнальным, а не залит: одно сигнальное
+   пятно на экран уже потрачено на кнопку «Заказать». */
+.bar nav > a[aria-current='page'] {
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.bar .btn {
+  min-height: var(--tap-min);
+  padding-inline: var(--sp-5);
+}
+
+.drop {
+  position: relative;
+}
+
+.drop menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin: 0;
+  padding: var(--sp-2);
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-2);
+  min-width: 266px;
+  list-style: none;
+  z-index: 50;
+}
+
+.drop:hover menu,
+.drop:focus-within menu {
+  display: grid;
+}
+
+.drop menu a {
+  display: block;
+  padding: var(--sp-3);
+  border-radius: var(--r-sm);
+  color: var(--ink);
+  font-size: var(--step-0);
+}
+
+.drop menu a:hover {
+  background: var(--paper-sunken);
+  color: var(--accent-ink);
+}
+
+/* ---- Хлебные крошки ---------------------------------------------------- */
+
+.crumbs {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--sp-5) var(--gutter) 0;
+  font-size: var(--step-0);
+  color: var(--ink-2);
+}
+
+.crumbs a {
+  color: var(--ink-2);
+}
+
+.crumbs a:hover {
+  color: var(--accent-ink);
+}
+
+/* ---- Хиро -------------------------------------------------------------- */
+
+.hero {
+  border-block-end: 1px solid var(--line);
+}
+
+.hero .wrap {
+  display: grid;
+  grid-template-columns: 1.04fr 0.96fr;
+  gap: var(--sp-8);
+  align-items: center;
+  padding-block: var(--section-y);
+}
+
+.hero h1 {
+  margin-block-end: var(--sp-6);
+}
+
+.hero figure {
+  margin: 0;
+  position: relative;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  aspect-ratio: 4 / 3;
+  background: var(--photo-mat);
+}
+
+.hero figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: var(--photo-filter);
+}
+
+.hero figcaption {
+  position: absolute;
+  left: var(--sp-3);
+  bottom: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(6px);
+  font-size: var(--step--1);
+  border-radius: var(--r-sm);
+}
+
+/* ---- Полоса разделов --------------------------------------------------- */
+
+.band {
+  background: var(--paper-sunken);
+  border-block-end: 1px solid var(--line);
+}
+
+.band .wrap {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.band .wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.band a {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  min-height: var(--tap-comfortable);
+  padding: var(--sp-4);
+  border-inline-end: 1px solid var(--line);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: var(--step-0);
+  white-space: nowrap;
+  transition: background var(--dur-2) var(--ease);
+}
+
+.band a:hover {
+  background: var(--paper-raised);
+  color: var(--accent-ink);
+}
+
+.band a:first-child {
+  padding-inline-start: 0;
+}
+
+.band a:last-child {
+  border-inline-end: none;
+}
+
+/* ---- Хаб услуг --------------------------------------------------------- */
+
+.hub {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-4);
+}
+
+.h-card {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: var(--sp-2);
+  padding: var(--sp-6) var(--sp-5) var(--sp-5);
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  color: var(--ink);
+  transition:
+    border-color var(--dur-2) var(--ease),
+    transform var(--dur-2) var(--ease);
+}
+
+.h-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  color: var(--ink);
+}
+
+.h-card i {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--ink-3);
+}
+
+.h-card b {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: var(--tracking-heading);
+}
+
+.h-card p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--step-0);
+}
+
+.h-card u {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-block-start: var(--sp-2);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: var(--step-0);
+  color: var(--accent-ink);
+  transition: gap var(--dur-2) var(--ease);
+}
+
+.h-card:hover u {
+  gap: var(--sp-3);
+}
+
+/* Карточка определителя занимает две колонки и стоит на утопленном фоне —
+   это вход в отдельный инструмент, а не седьмая услуга. */
+.h-card.wide {
+  grid-column: span 2;
+  background: var(--paper-sunken);
+}
+
+/* ---- Шаги -------------------------------------------------------------- */
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-6);
+}
+
+.step .n {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 700;
+}
+
+.step b {
+  display: block;
+  margin-block: var(--sp-2);
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+}
+
+.step p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--step-0);
+}
+
+/* ---- Склад ------------------------------------------------------------- */
+
+.groups {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-4);
+}
+
+.group {
+  padding: var(--sp-5);
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.group b {
+  display: block;
+  margin-block-end: var(--sp-3);
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+}
+
+.group ul {
+  margin: 0;
+  padding-inline-start: var(--sp-5);
+  color: var(--ink-2);
+  font-size: var(--step-0);
+}
+
+.group li + li {
+  margin-block-start: var(--sp-1);
+}
+
+/* ---- Форма заявки ------------------------------------------------------ */
+
+.two {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: var(--sp-5);
+}
+
+.pane {
+  display: grid;
+  gap: var(--sp-4);
+  align-content: start;
+  padding: var(--sp-6);
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.pane.warm {
+  background: var(--paper-sunken);
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+}
+
+.hint {
+  font-size: var(--step-0);
+  color: var(--ink-2);
+}
+
+/* Ловушка для ботов. Не display:none и не hidden: часть ботов такие поля
+   пропускает, а увести за край — надёжнее. */
+.trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.chans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--sp-3);
+}
+
+.chan {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: var(--tap-comfortable);
+  padding: var(--sp-3);
+  border: 0;
+  border-radius: var(--r-md);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--step-0);
+  text-align: start;
+  cursor: pointer;
+  color: var(--ink);
+  background: var(--paper-sunken);
+  box-shadow: inset 0 0 0 1.5px var(--line-metal);
+  transition:
+    background var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease);
+}
+
+.chan:hover {
+  background: var(--paper-raised);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+
+/* WhatsApp — главное действие блока, единственная заливка сигнальным. */
+.chan.wa {
+  background: var(--accent-fill);
+  color: var(--accent-on);
+  box-shadow: none;
+}
+
+.chan.wa:hover {
+  background: var(--accent-fill-hover);
+  box-shadow: none;
+}
+
+.chan svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  fill: currentColor;
+}
+
+.chan[disabled] {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+/* ---- Покажите деталь ---------------------------------------------------
+   Главное действие сайта: по снимку деталь опознаётся быстрее, чем по
+   любому описанию. Зона загрузки и превью снимка — те самые места, где
+   стоят угловые метки: они значат «сюда помещается предмет». */
+
+.shot {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+/* Зона — это <label>, но не подпись к графе: общий стиль лейбла (моно,
+   капслок, разрядка) здесь сбрасывается, иначе приглашение читается как
+   служебная метка. */
+.shot-zone {
+  display: grid;
+  place-items: center;
+  gap: var(--sp-2);
+  min-height: 128px;
+  padding: var(--sp-5);
+  background: var(--paper-sunken);
+  border-radius: var(--r-md);
+  text-align: center;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--ink);
+  transition: background var(--dur-2) var(--ease);
+}
+
+.shot-zone:hover,
+.shot-zone.is-active {
+  background: var(--paper-raised);
+}
+
+.shot-zone b {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+}
+
+.shot-zone span {
+  color: var(--ink-2);
+  font-size: var(--step-0);
+  max-width: 34ch;
+}
+
+.shot-zone input[type='file'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  border: 0;
+}
+
+.shots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: var(--sp-3);
+}
+
+.shots:empty {
+  display: none;
+}
+
+.shot-item {
+  position: relative;
+  aspect-ratio: 1;
+  background: var(--photo-mat);
+  border-radius: var(--r-sm);
+}
+
+.shot-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  filter: var(--photo-filter);
+}
+
+/* Снять снимок — действие разрушительное, поэтому подписано крестом,
+   а не иконкой: иконочного шрифта на сайте нет. */
+.shot-item button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  display: grid;
+  place-items: center;
+  color: var(--ink-invert);
+  background: color-mix(in srgb, var(--ink-900) 72%, transparent);
+  border-end-start-radius: var(--r-md);
+  border-start-end-radius: var(--r-sm);
+  font-size: var(--step-1);
+  line-height: 1;
+}
+
+.shot-item button:hover {
+  background: var(--accent-fill-hover);
+}
+
+/* Голосовое: вторая зона «сюда помещается предмет» — здесь помещается
+   запись. Отсюда те же угловые метки вместо рамки. */
+.voice {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  background: var(--paper-raised);
+  border-radius: var(--r-md);
+}
+
+.vrow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.vbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: var(--tap-comfortable);
+  padding: var(--sp-3) var(--sp-5);
+  border: 0;
+  border-radius: var(--r-md);
+  background: var(--accent-fill);
+  color: var(--accent-on);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--step-0);
+  cursor: pointer;
+  transition: background var(--dur-2) var(--ease);
+}
+
+.vbtn:hover {
+  background: var(--accent-fill-hover);
+}
+
+.vbtn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Идёт запись — кнопка уходит в чернила, сигнал остаётся только на точке. */
+.vbtn.rec {
+  background: var(--ink);
+  color: var(--ink-invert);
+}
+
+.dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: 0 0 auto;
+}
+
+.vbtn.rec .dot {
+  background: var(--accent);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.vtime {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: var(--step-1);
+  color: var(--ink);
+}
+
+.vhint {
+  margin: 0;
+  font-size: var(--step-0);
+  color: var(--ink-2);
+}
+
+audio {
+  width: 100%;
+}
+
+.pane .sep {
+  border-block-start: 1px solid var(--line);
+  padding-block-start: var(--sp-4);
+  font-size: var(--step-0);
+  color: var(--ink-2);
+}
+
+/* Номер заявки — то, ради чего форма и существует: по нему клиент и
+   оператор говорят об одной задаче. Набран моно, крупно, читается вслух. */
+.okbox {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--accent);
+  border-radius: var(--r-md);
+}
+
+.okno {
+  font-family: var(--font-mono);
+  font-size: var(--step-3);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+
+.okbox p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--step-0);
+}
+
+.okbox.err {
+  border-inline-start-color: var(--warn-500);
+}
+
+/* Запасной путь, когда браузер не отдал буфер обмена: текст показывается
+   целиком и выделяется — скопировать вручную всегда можно. */
+.copy-fallback {
+  min-height: 7rem;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+}
+
+/* ---- Станки ------------------------------------------------------------ */
+
+.mgrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-4);
+}
+
+.m {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  padding: 0;
+  scroll-margin-top: calc(var(--header-h) + var(--sp-5));
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  text-align: start;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease);
+}
+
+.m:hover {
+  border-color: var(--accent);
+}
+
+.m.on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* Схема лежит на бумажном мате, как чертёж на подложке, и рисуется
+   чернилами. Красный — только то, ради чего станок нужен: шпиндель,
+   пуансон, круг, диск. */
+.m svg {
+  width: 100%;
+  height: auto;
+  padding: var(--sp-4) var(--sp-4) 0;
+  background: var(--draw-paper);
+  border-radius: var(--r-md) var(--r-md) 0 0;
+  box-shadow: inset 0 -1px 0 var(--line);
+}
+
+.m svg * {
+  fill: none;
+  stroke: var(--draw-ink-2);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke var(--dur-2) var(--ease);
+}
+
+.m svg .hot {
+  stroke: var(--draw-accent);
+}
+
+.m:hover svg *,
+.m.on svg * {
+  stroke: var(--draw-ink);
+}
+
+.m:hover svg .hot,
+.m.on svg .hot {
+  stroke: var(--draw-accent);
+}
+
+.m .meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+}
+
+.m .meta i {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--ink-3);
+}
+
+.m .meta b {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: var(--tracking-heading);
+}
+
+/* Карточка закрыта: схема и название. «Нажмите на схему — раскроется,
+   что на этом станке делается» — значит до нажатия этого и не видно.
+   Заодно держится правило одного действия на экран: красная кнопка
+   принадлежит открытой карточке, а не всем шести сразу. */
+.m .can,
+.m .go {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition:
+    max-height var(--dur-4) var(--ease-drawer),
+    opacity var(--dur-3) var(--ease),
+    margin var(--dur-3) var(--ease),
+    padding var(--dur-3) var(--ease);
+}
+
+.m .can {
+  display: block;
+  padding-inline: var(--sp-5);
+  color: var(--ink-2);
+  font-size: var(--step-0);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.m.on .can {
+  max-height: 12rem;
+  opacity: 1;
+  padding-block: var(--sp-2) 0;
+}
+
+.m .go {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-inline: var(--sp-5);
+  padding-inline: var(--sp-4);
+  background: var(--accent-fill);
+  color: var(--accent-on);
+  border-radius: var(--r-md);
+  font-weight: 700;
+  font-size: var(--step-0);
+}
+
+.m.on .go {
+  max-height: var(--tap-comfortable);
+  min-height: var(--tap-comfortable);
+  opacity: 1;
+  margin-block: var(--sp-5);
+  padding-block: var(--sp-3);
+}
+
+.m.on:hover .go {
+  background: var(--accent-fill-hover);
+}
+
+/* Подпись «подробнее» подсказывает, что карточка раскрывается, и
+   исчезает, когда она раскрыта. */
+.m .more {
+  margin-inline-start: auto;
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.m.on .more {
+  visibility: hidden;
+}
+
+.m.on {
+  padding-block-end: 0;
+}
+
+/* ---- Определитель детали ----------------------------------------------- */
+
+.finder {
+  display: grid;
+  gap: var(--sp-6);
+}
+
+.tabs {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  border-block-end: 1px solid var(--line);
+}
+
+.tab {
+  min-height: var(--tap-min);
+  padding: var(--sp-3) var(--sp-4);
+  margin-block-end: -1px;
+  border: 0;
+  border-block-end: 2px solid transparent;
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: var(--step-0);
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: color var(--dur-2) var(--ease);
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab[aria-selected='true'] {
+  color: var(--ink);
+  border-block-end-color: var(--accent);
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.panel {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.panel > p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--step-0);
+}
+
+.chipset {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+/* Плитка места — вторая и последняя зона с угловыми метками: в неё
+   «помещается» предмет, который человек ищет. */
+.chip {
+  display: grid;
+  gap: var(--sp-1);
+  min-height: var(--tap-comfortable);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  font-family: var(--font-display);
+  font-size: var(--step-0);
+  color: var(--ink);
+  text-align: start;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-2) var(--ease),
+    background var(--dur-2) var(--ease);
+}
+
+.chip:hover {
+  border-color: var(--accent);
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--paper-sunken);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+/* У плитки места рамки нет — её роль играют уголки, и они же краснеют
+   при наведении и выборе. */
+.chip.brackets[aria-pressed='true'] > .brackets__tick {
+  width: 26px;
+  height: 26px;
+  border-color: var(--signal-500);
+}
+
+.chip b {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+}
+
+.chip span {
+  color: var(--ink-2);
+  font-size: var(--step--1);
+}
+
+/* Симптом — строка, а не плитка: их 37, и они читаются списком. */
+.chip.sym {
+  display: block;
+  min-height: var(--tap-min);
+  padding: var(--sp-3);
+  font-size: var(--step-0);
+}
+
+.search input {
+  font-size: var(--step-2);
+  min-height: var(--tap-primary);
+}
+
+.count {
+  color: var(--ink-2);
+  font-size: var(--step-0);
+  font-family: var(--font-mono);
+}
+
+.pgrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-4);
+}
+
+.p {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 0;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  text-align: start;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-2) var(--ease),
+    transform var(--dur-2) var(--ease);
+}
+
+.p:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.p.on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.p .art {
+  padding: var(--sp-5) var(--sp-5) var(--sp-3);
+  background: var(--draw-paper);
+  border-radius: var(--r-md) var(--r-md) 0 0;
+  color: var(--draw-ink-2);
+  box-shadow: inset 0 -1px 0 var(--line);
+  transition: color var(--dur-2) var(--ease);
+}
+
+.p:hover .art,
+.p.on .art {
+  color: var(--draw-ink);
+}
+
+.p .art svg {
+  width: 100%;
+  height: auto;
+}
+
+.p .txt {
+  padding: var(--sp-5) var(--sp-5) 0;
+}
+
+.p .txt b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-weight: 700;
+  line-height: 1.28;
+  letter-spacing: var(--tracking-heading);
+}
+
+.p .txt i {
+  display: block;
+  margin-block-start: var(--sp-2);
+  font-style: normal;
+  color: var(--ink-2);
+  font-size: var(--step--1);
+}
+
+.p .open {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: var(--sp-4) var(--sp-5) var(--sp-5);
+  font-weight: 700;
+  font-size: var(--step-0);
+  color: var(--accent-ink);
+  transition: gap var(--dur-2) var(--ease);
+}
+
+.p:hover .open {
+  gap: var(--sp-3);
+}
+
+/* Карточка детали раскрывается по :target — то есть работает и без JS:
+   плитка в сетке это обычная ссылка на якорь. JS добавляет к этому только
+   фильтры и подстановку названия в заявку. */
+.detail {
+  display: none;
+  scroll-margin-top: calc(var(--header-h) + var(--sp-5));
+  background: var(--paper-raised);
+  border: 1px solid var(--accent);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.detail:target,
+.detail.on {
+  display: block;
+}
+
+.detail .top {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  align-items: stretch;
+}
+
+.detail .art2 {
+  display: grid;
+  place-items: center;
+  padding: var(--sp-6);
+  background: var(--draw-paper);
+  color: var(--draw-accent);
+}
+
+.detail .art2 svg {
+  width: 100%;
+  height: auto;
+}
+
+.detail .head {
+  padding: var(--sp-6) var(--sp-6) var(--sp-5);
+}
+
+.detail h3 {
+  margin-block-end: var(--sp-1);
+  font-size: var(--step-3);
+  line-height: 1.2;
+}
+
+.detail .term {
+  margin-block-end: var(--sp-4);
+  color: var(--ink-2);
+  font-size: var(--step-0);
+}
+
+.detail .what {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--step-1);
+  max-width: 62ch;
+}
+
+.detail .cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-block-start: 1px solid var(--line);
+}
+
+.detail .col {
+  padding: var(--sp-5) var(--sp-6);
+}
+
+.detail .col + .col {
+  border-inline-start: 1px solid var(--line);
+}
+
+.detail .col b {
+  display: block;
+  margin-block-end: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.detail .col ul {
+  margin: 0;
+  padding-inline-start: var(--sp-5);
+  color: var(--ink-2);
+  font-size: var(--step-0);
+}
+
+.detail .col li + li {
+  margin-block-start: var(--sp-2);
+}
+
+.detail .acts2 {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  align-items: center;
+  padding: var(--sp-5) var(--sp-6);
+  border-block-start: 1px solid var(--line);
+  background: var(--paper-sunken);
+}
+
+.detail .acts2 span {
+  color: var(--ink-2);
+  font-size: var(--step-0);
+}
+
+.empty {
+  padding: var(--sp-6) var(--sp-1);
+  color: var(--ink-2);
+  font-size: var(--step-1);
+}
+
+/* ---- Вопросы и ответы -------------------------------------------------- */
+
+.faq {
+  display: grid;
+  max-width: 900px;
+}
+
+.q {
+  border-block-start: 1px solid var(--line);
+}
+
+.q:last-child {
+  border-block-end: 1px solid var(--line);
+}
+
+.q summary {
+  display: flex;
+  gap: var(--sp-4);
+  align-items: baseline;
+  padding-block: var(--sp-5);
+  min-height: var(--tap-comfortable);
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+  list-style: none;
+  cursor: pointer;
+}
+
+.q summary::-webkit-details-marker {
+  display: none;
+}
+
+.q summary::after {
+  content: '+';
+  margin-inline-start: auto;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: var(--step-3);
+  line-height: 1;
+}
+
+.q[open] summary::after {
+  content: '–';
+}
+
+.q p {
+  margin-block-end: var(--sp-5);
+  color: var(--ink-2);
+  font-size: var(--step-1);
+  max-width: var(--measure-prose);
+}
+
+/* ---- Перелинковка ------------------------------------------------------ */
+
+.rel {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-3);
+}
+
+.rel a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  min-height: var(--tap-comfortable);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: var(--step-0);
+  transition: border-color var(--dur-2) var(--ease);
+}
+
+.rel a:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.rel a span {
+  color: var(--accent);
+}
+
+/* ---- 3D ---------------------------------------------------------------- */
+
+.stage3d {
+  display: block;
+  position: relative;
+  aspect-ratio: 21 / 9;
+  overflow: hidden;
+  background: var(--photo-mat);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.stage3d img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: var(--photo-filter);
+  transition: transform var(--dur-4) var(--ease);
+}
+
+.stage3d:hover img {
+  transform: scale(1.02);
+}
+
+.stage3d .veil {
+  position: absolute;
+  left: var(--sp-5);
+  right: var(--sp-5);
+  bottom: var(--sp-5);
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.stage3d .lab {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: var(--tap-comfortable);
+  padding: var(--sp-3) var(--sp-5);
+  background: var(--accent-fill);
+  color: var(--accent-on);
+  border-radius: var(--r-md);
+  font-weight: 700;
+  font-size: var(--step-0);
+  transition: background var(--dur-2) var(--ease);
+}
+
+.stage3d:hover .lab {
+  background: var(--accent-fill-hover);
+}
+
+.stage3d .sub2 {
+  justify-self: start;
+  max-width: 640px;
+  padding: var(--sp-2) var(--sp-3);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(6px);
+  color: var(--ink);
+  font-size: var(--step--1);
+  border-radius: var(--r-sm);
+}
+
+/* Строка каталога объектов: та же карточка, но без картинки. */
+.stage3d.row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  aspect-ratio: auto;
+  padding: var(--sp-5);
+  margin-block-start: var(--sp-4);
+  background: var(--paper-raised);
+}
+
+.stage3d.row .t {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.stage3d.row .t b {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+  color: var(--ink);
+}
+
+.stage3d.row .t span {
+  color: var(--ink-2);
+  font-size: var(--step-0);
+}
+
+.stage3d.row .lab {
+  margin-inline-start: auto;
+}
+
+/* ---- Подвал ------------------------------------------------------------
+   Перевёрнутая полоса: чернила под бумагой. Это второй фон страницы и
+   единственное место, где он занимает всю ширину. */
+
+footer {
+  background: var(--paper-invert);
+  color: var(--ink-invert);
+  border: 0;
+}
+
+footer .wrap {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: var(--sp-7);
+  padding-block: var(--sp-8) var(--sp-7);
+}
+
+footer a {
+  color: var(--ink-invert);
+}
+
+footer a:hover {
+  color: var(--accent-on-ink);
+}
+
+footer b {
+  display: block;
+  margin-block-end: var(--sp-4);
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+}
+
+footer .col {
+  display: grid;
+  gap: var(--sp-2);
+  align-content: start;
+  font-size: var(--step-0);
+}
+
+footer .dimf {
+  color: color-mix(in srgb, var(--ink-invert) 62%, transparent);
+  font-size: var(--step-0);
+}
+
+.tail {
+  border-block-start: 1px solid color-mix(in srgb, var(--ink-invert) 18%, transparent);
+}
+
+.tail .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  padding-block: var(--sp-5) var(--sp-6);
+  font-size: var(--step--1);
+  color: color-mix(in srgb, var(--ink-invert) 62%, transparent);
+}
+
+/* ---- Липкий CTA --------------------------------------------------------
+   Только на телефоне: на десктопе телефон и кнопка есть в шапке, а полоса
+   внизу отняла бы у страницы 72px без нужды. */
+
+.sticky {
+  display: none;
+}
+
+/* ---- Раскладка на узких экранах ---------------------------------------- */
+
+@media (max-width: 68.75rem) {
+  .hub,
+  .groups,
+  .mgrid,
+  .rel,
+  .pgrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .h-card.wide {
+    grid-column: span 2;
+  }
+  footer .wrap {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 62.5rem) {
+  .hero .wrap,
+  .two,
+  .pair,
+  .steps {
+    grid-template-columns: 1fr;
+  }
+  .ul-2 {
+    columns: 1;
+  }
+  .bar nav > a:not(.btn),
+  .drop {
+    display: none;
+  }
+
+  .sticky {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    gap: 1px;
+    background: var(--line-metal);
+    border-block-start: 1px solid var(--line);
+  }
+  .sticky a {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--sticky-cta-h);
+    padding: var(--sp-4);
+    background: var(--accent-fill);
+    color: var(--accent-on);
+    font-weight: 700;
+    font-size: var(--step-0);
+  }
+  .sticky a.alt {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  /* Полоса не должна закрывать подвал. */
+  body:has(.sticky) {
+    padding-block-end: var(--sticky-cta-h);
+  }
+}
+
+@media (max-width: 56.25rem) {
+  .detail .top,
+  .detail .cols {
+    grid-template-columns: 1fr;
+  }
+  .detail .col + .col {
+    border-inline-start: 0;
+    border-block-start: 1px solid var(--line);
+  }
+}
+
+@media (max-width: 40rem) {
+  .hub,
+  .groups,
+  .mgrid,
+  .rel,
+  .pgrid {
+    grid-template-columns: 1fr;
+  }
+  .h-card.wide {
+    grid-column: auto;
+  }
+  .stage3d.row {
+    flex-wrap: wrap;
+  }
+  .stage3d.row .lab {
+    margin-inline-start: 0;
+  }
+}

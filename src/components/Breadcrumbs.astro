@@ -1,0 +1,23 @@
+---
+interface Props {
+  trail: { name: string; href: string }[];
+}
+
+const { trail } = Astro.props;
+const last = trail.length - 1;
+---
+
+<nav class="crumbs" aria-label="Хлебные крошки">
+  {
+    trail.map((item, i) =>
+      i === last ? (
+        <span aria-current="page">{item.name}</span>
+      ) : (
+        <>
+          <a href={item.href}>{item.name}</a>
+          <span aria-hidden="true"> · </span>
+        </>
+      )
+    )
+  }
+</nav>

@@ -1,0 +1,143 @@
+---
+import { parts, places, symptoms } from '~/data/parts';
+import Brackets from '~/components/Brackets.astro';
+
+/**
+ * Определитель детали — три входа в один список.
+ *
+ * Всё, что можно, отрисовано на сервере: двенадцать плиток и двенадцать
+ * карточек лежат в разметке, карточка раскрывается по :target. Поэтому
+ * страница работает без JS и её содержимое — тексты про минификс,
+ * направляющую, полкодержатель — попадает в индекс.
+ *
+ * JS добавляет к этому только то, чего разметкой не сделать: фильтры по
+ * месту и по проблеме, поиск по бытовым названиям и подстановку названия
+ * детали в заявку.
+ */
+---
+
+<div class="finder">
+  <div class="tabs" role="tablist" aria-label="Как искать деталь">
+    <button class="tab" type="button" role="tab" id="tab-pl" aria-controls="pl" aria-selected="true"
+      >По месту</button
+    >
+    <button class="tab" type="button" role="tab" id="tab-nm" aria-controls="nm" aria-selected="false"
+      >По названию</button
+    >
+    <button class="tab" type="button" role="tab" id="tab-sy" aria-controls="sy" aria-selected="false"
+      >По проблеме</button
+    >
+  </div>
+
+  <div class="panel" id="pl" role="tabpanel" aria-labelledby="tab-pl">
+    <p>Где стоит деталь?</p>
+    <div class="chipset" id="places">
+      {
+        places.map((p) => (
+          <button
+            class="chip brackets"
+            type="button"
+            data-place={p.id}
+            aria-pressed="false"
+          >
+            <Brackets />
+            <b>{p.label}</b>
+            <span>{p.note}</span>
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="panel" id="nm" role="tabpanel" aria-labelledby="tab-nm" hidden>
+    <p>Наберите как умеете: «рельса», «минификс», «дверца висит».</p>
+    <div class="search">
+      <input id="q" type="search" placeholder="Например: рельса, штырёк под полку, газлифт" />
+    </div>
+  </div>
+
+  <div class="panel" id="sy" role="tabpanel" aria-labelledby="tab-sy" hidden>
+    <p>Что случилось?</p>
+    <div class="chipset" id="syms">
+      {
+        symptoms.map((s) => (
+          <button class="chip sym" type="button" data-sym={s} aria-pressed="false">
+            {s}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="count" id="count"></div>
+
+  <div class="pgrid" id="pgrid">
+    {
+      parts.map((p) => (
+        <a
+          class="p"
+          href={`#detail-${p.id}`}
+          data-id={p.id}
+          data-place={p.place.join(' ')}
+          data-terms={[p.said, p.term, ...p.aliases, ...p.symptoms].join(' | ').toLowerCase()}
+        >
+          <span class="art" set:html={p.svg} />
+          <span class="txt">
+            <b>{p.said}</b>
+            <i>{p.term}</i>
+          </span>
+          <span class="open">
+            Что это и что снять <span aria-hidden="true">→</span>
+          </span>
+        </a>
+      ))
+    }
+  </div>
+
+  <p class="empty" id="empty" hidden>
+    Ничего не нашлось по этим словам. Опишите деталь своими словами в заявке или пришлите фото —
+    опознаем по снимку.
+  </p>
+
+  {
+    parts.map((p) => (
+      <article class="detail" id={`detail-${p.id}`}>
+        <div class="top">
+          <div class="art2" set:html={p.svg} />
+          <div class="head">
+            <h3>{p.said}</h3>
+            <p class="term">Называется: {p.term}</p>
+            <p class="what">{p.what}</p>
+          </div>
+        </div>
+        <div class="cols">
+          <div class="col">
+            <b>Что обычно случается</b>
+            <ul>
+              {p.symptoms.map((s) => (
+                <li>{s}</li>
+              ))}
+            </ul>
+          </div>
+          <div class="col">
+            <b>Что сфотографировать</b>
+            <ul>
+              {p.shoot.map((s) => (
+                <li>{s}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div class="acts2">
+          <button class="btn" type="button" data-order={`${p.said} (${p.term})`}>
+            Заказать эту деталь
+          </button>
+          <a class="btn line" href={p.service}>
+            Подробнее о работе
+          </a>
+          <span>Фото по списку слева отвечает на большинство вопросов сразу</span>
+        </div>
+      </article>
+    ))
+  }
+</div>

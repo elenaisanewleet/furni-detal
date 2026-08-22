@@ -1,0 +1,14 @@
+---
+import { site } from '~/data/site';
+
+/**
+ * Полоса внизу экрана — только на телефоне. На десктопе телефон и кнопка
+ * уже стоят в шапке, и полоса отняла бы у страницы 72 пикселя без нужды
+ * (см. --sticky-cta-h: на широких экранах он равен нулю).
+ */
+---
+
+<div class="sticky no-print">
+  <a href={site.whatsapp} rel="noopener">Написать в WhatsApp</a>
+  <a class="alt" href={`tel:${site.phone.tel}`}>Позвонить</a>
+</div>

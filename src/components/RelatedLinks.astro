@@ -1,0 +1,18 @@
+---
+interface Props {
+  links: { href: string; label: string }[];
+}
+
+const { links } = Astro.props;
+---
+
+<div class="rel">
+  {
+    links.map((l) => (
+      <a href={l.href}>
+        {l.label}
+        <span aria-hidden="true">→</span>
+      </a>
+    ))
+  }
+</div>

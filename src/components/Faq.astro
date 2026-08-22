@@ -1,0 +1,26 @@
+---
+import type { Faq } from '~/data/services';
+
+interface Props {
+  items: Faq[];
+}
+
+const { items } = Astro.props;
+
+/**
+ * Ответы открываются через <details>: без JS, доступно с клавиатуры и
+ * находится поиском по странице. Тот же список уходит в FAQPage —
+ * разметка и текст на экране обязаны совпадать, иначе это разметка-обманка.
+ */
+---
+
+<div class="faq">
+  {
+    items.map((item) => (
+      <details class="q">
+        <summary>{item.q}</summary>
+        <p>{item.a}</p>
+      </details>
+    ))
+  }
+</div>

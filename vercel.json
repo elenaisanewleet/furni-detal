@@ -1,0 +1,44 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "astro",
+  "trailingSlash": true,
+  "redirects": [
+    { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/furnitura-i-krepezh.html", "destination": "/furnitura-i-krepezh/", "permanent": true },
+    { "source": "/mebel-na-zakaz.html", "destination": "/mebel-na-zakaz/", "permanent": true },
+    { "source": "/remont-mebeli.html", "destination": "/remont-mebeli/", "permanent": true },
+    { "source": "/metallicheskie-uzly.html", "destination": "/metallicheskie-uzly/", "permanent": true },
+    { "source": "/raspil-i-prisadka.html", "destination": "/raspil-i-prisadka/", "permanent": true },
+    { "source": "/zatochka.html", "destination": "/zatochka/", "permanent": true },
+    { "source": "/podbor-detali.html", "destination": "/podbor-detali/", "permanent": true },
+    { "source": "/stanki.html", "destination": "/stanki/", "permanent": true },
+    { "source": "/zakaz.html", "destination": "/zakaz/", "permanent": true },
+    { "source": "/kontakty.html", "destination": "/kontakty/", "permanent": true },
+    { "source": "/masterskaya-3d.html", "destination": "/masterskaya-3d/", "permanent": true },
+    { "source": "/katalog-3d.html", "destination": "/katalog-3d/", "permanent": true }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
+      ]
+    },
+    {
+      "source": "/fonts/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/vendor/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/_astro/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }
+  ]
+}

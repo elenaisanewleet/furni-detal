@@ -1,0 +1,15 @@
+---
+import { steps } from '~/data/stock';
+---
+
+<div class="steps">
+  {
+    steps.map((s) => (
+      <div class="step">
+        <span class="n">{s.n}</span>
+        <b>{s.title}</b>
+        <p>{s.text}</p>
+      </div>
+    ))
+  }
+</div>
