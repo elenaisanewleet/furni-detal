@@ -35,11 +35,9 @@ const schema = [contactPage(originOf(Astro.site))];
           <a class="phone" href={`tel:${site.phone.tel}`}>{site.phone.label}</a>
           <div class="hint">{site.phone.person}, {site.phone.role}</div>
           <div class="links">
-            <a href={site.whatsapp} rel="noopener">WhatsApp по этому номеру</a>
-            <a href={site.telegram.personal} rel="noopener">
-              Telegram {site.telegram.personalHandle}
-            </a>
-            <a href="/zakaz/">Оставить заявку на сайте</a>
+            <a href={site.whatsapp} rel="noopener">Написать в WhatsApp по этому номеру</a>
+            <a href={site.telegram.botUrl} rel="noopener">Написать в Telegram</a>
+            <a href="/zakaz/">Показать деталь на сайте</a>
           </div>
           <div class="sep">
             {placeLine}
@@ -58,7 +56,7 @@ const schema = [contactPage(originOf(Astro.site))];
             <li>к какому сроку нужно</li>
           </ul>
           <p class="hint">Если названия детали не знаете — фотографии достаточно.</p>
-          <a class="btn" href="/zakaz/">Оставить заявку</a>
+          <a class="btn dark" href="/zakaz/">Показать деталь</a>
         </div>
       </div>
     </div>

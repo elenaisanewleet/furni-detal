@@ -2,7 +2,17 @@
 import { site } from '~/data/site';
 import { services, primaryNav } from '~/data/nav';
 
-/** Текущий раздел — чтобы подсветить пункт меню и не давать ссылку на себя. */
+/**
+ * Шапка.
+ *
+ * Действие здесь — чернильное, а не красное. Сигнальный цвет в системе
+ * принадлежит ровно одному действию на экране — приёму детали, — и шапка
+ * его не тратит: иначе на главной оказывается два красных пятна, и ни одно
+ * не главное.
+ *
+ * Телефон набран моноширинным и отделён от меню: иначе он читается как
+ * ещё один пункт навигации, каким не является.
+ */
 const here = Astro.url.pathname;
 const isHere = (href: string) => here === href;
 ---
@@ -29,9 +39,9 @@ const isHere = (href: string) => here === href;
           </a>
         ))
       }
-
-      <a class="tel" href={`tel:${site.phone.tel}`}>{site.phone.label}</a>
-      <a class="btn" href="/zakaz/">Заказать</a>
     </nav>
+
+    <a class="bar-tel" href={`tel:${site.phone.tel}`}>{site.phone.label}</a>
+    <a class="btn dark" href="/zakaz/">Показать деталь</a>
   </div>
 </div>

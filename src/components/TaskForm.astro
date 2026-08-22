@@ -2,66 +2,151 @@
 import { site } from '~/data/site';
 import Brackets from '~/components/Brackets.astro';
 
+/**
+ * Приёмная.
+ *
+ * Раскрывается постепенно, а не лежит открытой. Раньше здесь сразу висели
+ * два столбца: поля, зона снимка, четыре канала и диктофон — восемь
+ * решений на человека, который ещё ничего не показал. Теперь на экране
+ * одно: видоискатель.
+ *
+ *   шаг 1  покажите деталь        — зона с угловыми метками
+ *   шаг 2  что на фотографии      — четыре ответа обычными словами
+ *   шаг 3  пара слов или голосом  — и то и другое необязательно
+ *   шаг 4  куда ответить          — каналы появляются только здесь
+ *
+ * Зона не уводит на другую страницу: снимок попал внутрь — и та же рамка
+ * на том же месте становится следующим шагом. Путь «у меня сломалось →
+ * вот фото» умещается в один экран.
+ *
+ * Без JS видны все шаги сразу — форма остаётся рабочей.
+ */
+
 interface Props {
-  /** Тема заявки: подставляется в письмо и в тему письма на почту. */
+  /** Тема заявки: подставляется в письмо. */
   topic?: string;
-  /** Подсказка в поле «что нужно» — своя на страницах определителя. */
+  /** Подсказка в поле «пара слов» — своя на страницах определителя. */
   placeholder?: string;
-  /** Пояснение под кнопками каналов. */
-  hint?: string;
+  /** Заголовок приёмной. */
+  title?: string;
+  /** Строка под заголовком. */
+  lede?: string;
 }
 
 const {
   topic = '',
-  placeholder = 'Например: 40 монтажных пластин 60×60 с центральной шпилькой М8',
-  hint = 'Кнопка отправляет заявку в мастерскую, присваивает ей номер и открывает выбранный мессенджер. Для Telegram текст копируется в буфер — останется вставить.',
+  placeholder = 'ящик на кухне перестал ездить',
+  title = 'Покажите деталь',
+  lede = 'Название знать не нужно, размеры — примерно. Неправильно описать задачу здесь нельзя.',
 } = Astro.props;
 
 const { maxFiles, maxFileMb, accept } = site.upload;
+
+/** Ответы на «что на фотографии» — языком человека, а не каталога. */
+const answers = [
+  { id: 'broken', title: 'Здесь что-то сломалось', note: 'скажем, чем заменить' },
+  { id: 'same', title: 'Нужна такая же деталь', note: 'найдём точную или аналог' },
+  { id: 'place', title: 'Это место, куда что-то нужно', note: 'подскажем, что подойдёт' },
+  { id: 'idk', title: 'Не знаю — посмотрите сами', note: 'чаще всего' },
+];
 ---
 
-<div class="two" id="zayavka" data-endpoint={site.leadEndpoint || undefined}>
-  <div class="pane">
-    <input type="hidden" id="f-topic" value={topic} />
+<div class="intake" id="zayavka" data-endpoint={site.leadEndpoint || undefined}>
+  <input type="hidden" id="f-topic" value={topic} />
 
-    {/* Ловушка для ботов: человек этого поля не видит и не заполнит.
-        Скрыто в потоке, а не hidden-полем — бот заполняет и такие. */}
-    <div class="trap" aria-hidden="true">
-      <label>
-        Организация
-        <input id="f-company" name="company" tabindex="-1" autocomplete="off" />
-      </label>
+  {/* Ловушка для ботов: человек этого поля не видит и не заполнит. */}
+  <div class="trap" aria-hidden="true">
+    <label>
+      Организация
+      <input id="f-company" name="company" tabindex="-1" autocomplete="off" />
+    </label>
+  </div>
+
+  <p class="sr-only" id="intake-live" role="status" aria-live="polite"></p>
+
+  <!-- ШАГ 1 — видоискатель ------------------------------------------------ -->
+  <section class="step" data-step="1">
+    <label class="shot-zone brackets" id="shot-zone">
+      <Brackets />
+      <span class="ds-label">Шаг 1</span>
+      <b set:text={title} />
+      <span class="shot-zone__hint">
+        Перетащите снимок сюда или выберите на телефоне. До {maxFiles} штук, каждый до {maxFileMb} МБ.
+      </span>
+      <span class="btn dark" aria-hidden="true">Выбрать фото</span>
+      <input type="file" id="f-shots" accept={accept} multiple />
+    </label>
+
+    <p class="step__alt">
+      Не получается сфотографировать? <button type="button" class="linkish" id="skip-shot"
+        >Опишите словами</button
+      >
+    </p>
+  </section>
+
+  <!-- ШАГ 2 — что на фотографии -------------------------------------------- -->
+  <section class="step" data-step="2">
+    <div class="step__head">
+      <span class="ds-label">Шаг 2</span>
+      <h3>Что на фотографии?</h3>
+    </div>
+
+    <div class="shots" id="shots"></div>
+
+    <div class="tiles" id="answers" role="group" aria-label="Что на фотографии">
+      {
+        answers.map((a) => (
+          <button class="tile" type="button" data-answer={a.title} aria-pressed="false">
+            <b>{a.title}</b>
+            <span>{a.note}</span>
+          </button>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- ШАГ 3 — своими словами ------------------------------------------------ -->
+  <section class="step" data-step="3">
+    <div class="step__head">
+      <span class="ds-label">Шаг 3</span>
+      <h3>Пара слов — этого хватит</h3>
+    </div>
+
+    <label>
+      Что случилось
+      <textarea id="f-task" name="task" rows="3" placeholder={placeholder}></textarea>
+    </label>
+
+    <div class="voice brackets" id="voice">
+      <Brackets />
+      <div class="vrow">
+        <button class="vbtn" id="rec" type="button">
+          <span class="dot"></span>Сказать голосом
+        </button>
+        <span class="vtime" id="rtime">0:00</span>
+      </div>
+      <audio id="rplay" controls hidden></audio>
+      <a class="btn line" id="rdl" hidden href="#">Сохранить запись</a>
+      <p class="vhint" id="rhint">Так проще, чем печатать. Запись уйдёт вместе с заявкой.</p>
+    </div>
+  </section>
+
+  <!-- ШАГ 4 — куда ответить -------------------------------------------------- -->
+  <section class="step" data-step="4">
+    <div class="step__head">
+      <span class="ds-label">Шаг 4</span>
+      <h3>Куда вам ответить?</h3>
     </div>
 
     <div class="pair">
       <label>
-        Имя
-        <input id="f-name" name="name" autocomplete="name" placeholder="Как к вам обращаться" />
+        Как вас зовут
+        <input id="f-name" name="name" autocomplete="name" placeholder="Николай" />
       </label>
       <label>
         Телефон или мессенджер
         <input id="f-contact" name="contact" autocomplete="tel" placeholder="+7 ..." />
       </label>
-    </div>
-
-    <label>
-      Что нужно
-      <textarea id="f-task" name="task" rows="4" placeholder={placeholder}></textarea>
-    </label>
-
-    {/* Главное действие мастерской: по снимку деталь опознаётся быстрее,
-        чем по любому описанию. Угловые метки — «сюда помещается предмет». */}
-    <div class="shot">
-      <label class="shot-zone brackets" id="shot-zone">
-        <Brackets />
-        <b>Покажите деталь</b>
-        <span>
-          Фотография отвечает на большинство вопросов сразу. До {maxFiles} снимков, каждый
-          до {maxFileMb} МБ.
-        </span>
-        <input type="file" id="f-shots" accept={accept} multiple />
-      </label>
-      <div class="shots" id="shots"></div>
     </div>
 
     <div class="chans">
@@ -70,17 +155,15 @@ const { maxFiles, maxFileMb, accept } = site.upload;
           ><path
             d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5 0-1.9-.2-4-1.9-2.2-1.8-2.9-3.8-3-4.1-.1-.3-.5-1.4.2-2.2.3-.4.7-.5 1-.5h.5c.2 0 .4 0 .6.5l.7 1.7c.1.2 0 .4-.1.5l-.4.5c-.1.2-.2.3 0 .6.2.3.7 1.1 1.4 1.7.9.8 1.4 1 1.7 1.1.2.1.4 0 .5-.1l.6-.7c.2-.2.3-.2.5-.1l1.6.8c.2.1.4.2.4.4 0 .1 0 .5-.4 1.1z"
           ></path></svg
-        >Отправить в WhatsApp
+        >Отправить мастеру
       </button>
 
-      {/* Бот приёма заявок появляется, когда задан PUBLIC_TG_BOT; пока его
-          нет — заявка идёт в личный Telegram оператора, как сегодня. */}
       <button class="chan" type="button" data-send="tg" data-tg={site.telegram.botUrl}>
         <svg viewBox="0 0 24 24" aria-hidden="true"
           ><path
             d="M21.9 4.3 19 19.1c-.2 1-.8 1.2-1.6.8l-4.4-3.3-2.1 2c-.2.3-.4.4-.9.4l.3-4.4 8.1-7.3c.3-.3 0-.5-.5-.2L7.8 12.4 3.5 11c-.9-.3-1-.9.2-1.4l16.6-6.4c.8-.3 1.5.2 1.6 1.1z"
           ></path></svg
-        >Отправить в Telegram
+        >Ответьте в Telegram
       </button>
 
       <button class="chan" type="button" data-send="tel">
@@ -88,52 +171,23 @@ const { maxFiles, maxFileMb, accept } = site.upload;
           ><path
             d="M6.6 3h2.2c.5 0 .9.3 1 .8l.9 3.4c.1.4 0 .8-.4 1l-1.6 1.1a12 12 0 0 0 5.9 5.9l1.1-1.6c.2-.3.6-.5 1-.4l3.4.9c.5.1.8.5.8 1v2.2c0 1.5-1.2 2.7-2.7 2.7A16.9 16.9 0 0 1 3.9 5.7C3.9 4.2 5.1 3 6.6 3z"
           ></path></svg
-        >Позвонить {site.phone.label}
+        >Лучше позвонить
       </button>
 
-      {/* Кнопка почты существует, только если адрес задан: вести в пустой
-          mailto: хуже, чем не предлагать почту вовсе. */}
       {
         site.mail && (
           <button class="chan" type="button" data-send="mail" data-mail={site.mail}>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm1.7 2L12 12.2 19.3 7H4.7z" />
             </svg>
-            Отправить на почту
+            Напишите на почту
           </button>
         )
       }
     </div>
 
-    <span class="hint">{hint}</span>
-  </div>
-
-  <div class="pane warm">
-    <div class="eyebrow">Голосом</div>
-    <h3>Проще сказать, чем написать</h3>
-    <p class="hint">
-      Надиктуйте задачу своими словами — деталь, размеры, количество. До трёх минут.
-    </p>
-
-    <div class="voice brackets" id="voice">
-      <Brackets />
-      <div class="vrow">
-        <button class="vbtn" id="rec" type="button">
-          <span class="dot"></span>Записать голосовое
-        </button>
-        <span class="vtime" id="rtime">0:00</span>
-      </div>
-      <audio id="rplay" controls hidden></audio>
-      <a class="btn line" id="rdl" hidden href="#">Сохранить запись</a>
-      <p class="vhint" id="rhint">
-        Запись уйдёт вместе с заявкой — её можно прослушать перед отправкой.
-      </p>
-    </div>
-
-    <div class="sep">
-      Если снимать неудобно, привезите деталь: по образцу подберём такую же или совместимую.
-    </div>
-  </div>
+    <p class="hint">{lede}</p>
+  </section>
 </div>
 
 <script>

@@ -29,7 +29,7 @@ export const primaryNav: NavItem[] = [
 
 export const footerLinks: NavItem[] = [
   { href: '/podbor-detali/', label: 'Подбор детали' },
-  { href: '/zakaz/', label: 'Оставить заявку' },
+  { href: '/zakaz/', label: 'Показать деталь' },
   { href: '/stanki/', label: 'Станки мастерской' },
   { href: '/masterskaya-3d/', label: '3D-модель' },
   { href: '/katalog-3d/', label: 'Каталог объектов' },

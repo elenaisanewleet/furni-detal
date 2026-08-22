@@ -15,13 +15,18 @@ import { services, footerLinks } from '~/data/nav';
       {services.map((s) => <a href={s.href}>{s.label}</a>)}
     </div>
 
+    {/* Ник оператора из подписи убран: адрес личной переписки — не
+        название канала связи, и человеку он ничего не говорит.
+        Ссылка ведёт туда же. */}
     <div class="col">
       <b>Связаться</b>
-      <a class="tel" href={`tel:${site.phone.tel}`}>{site.phone.label}</a>
-      <a href={site.whatsapp} rel="noopener">WhatsApp</a>
-      <a href={site.telegram.personal} rel="noopener">
-        Telegram {site.telegram.personalHandle}
-      </a>
+      <a class="tel foot-tel" href={`tel:${site.phone.tel}`}>{site.phone.label}</a>
+      <a href={site.whatsapp} rel="noopener">Написать в WhatsApp</a>
+      <a href={site.telegram.botUrl} rel="noopener">Написать в Telegram</a>
+    </div>
+
+    <div class="col">
+      <b>Разделы</b>
       {footerLinks.map((l) => <a href={l.href}>{l.label}</a>)}
     </div>
   </div>

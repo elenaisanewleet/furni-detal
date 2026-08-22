@@ -141,6 +141,23 @@ section {
   align-items: center;
 }
 
+/* Телефон — не пункт меню. Моноширинный и с отбивкой слева, чтобы читался
+   как справочная строка, а не как ещё одна ссылка в ряду. */
+.bar-tel {
+  margin-inline-start: var(--sp-5);
+  padding-inline-start: var(--sp-5);
+  border-inline-start: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--ink);
+}
+
+.bar-tel:hover {
+  color: var(--accent-ink);
+}
+
 /* :not(.btn) обязателен: без него правило шапки перекрашивает текст
    кнопки «Заказать» в чернила по красному — 4.17:1, ниже нормы. */
 .bar nav > a:not(.btn),
@@ -163,14 +180,17 @@ section {
   color: var(--ink);
 }
 
-/* Текущий раздел — подчёркнут сигнальным, а не залит: одно сигнальное
-   пятно на экран уже потрачено на кнопку «Заказать». */
+/* Текущий раздел — чернильная подсечка, а не красная: сигнал в системе
+   принадлежит приёмной, и навигация его не занимает. */
 .bar nav > a[aria-current='page'] {
-  box-shadow: inset 0 -2px 0 var(--accent);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: inset 0 -2px 0 var(--line-strong);
 }
 
 .bar .btn {
   min-height: var(--tap-min);
+  margin-inline-start: var(--sp-4);
   padding-inline: var(--sp-5);
 }
 
@@ -236,16 +256,39 @@ section {
   border-block-end: 1px solid var(--line);
 }
 
+/* Композиция асимметричная: заголовок держит левую половину, приёмная —
+   правую и чуть уже. Выравнивание по верху, а не по центру: у приёмной
+   своя высота, и она растёт по мере раскрытия шагов. */
 .hero .wrap {
   display: grid;
-  grid-template-columns: 1.04fr 0.96fr;
+  grid-template-columns: 1fr 0.86fr;
   gap: var(--sp-8);
-  align-items: center;
+  align-items: start;
   padding-block: var(--section-y);
 }
 
+/* Заголовок держится на экране, пока человек идёт по шагам справа: иначе
+   при раскрытии приёмной левая колонка превращается в пустое поле. */
+.hero .wrap > div:first-child {
+  position: sticky;
+  top: calc(var(--header-h) + var(--sp-5));
+}
+
 .hero h1 {
-  margin-block-end: var(--sp-6);
+  margin-block-end: var(--sp-5);
+}
+
+.hero .intake {
+  max-width: none;
+}
+
+.hero__aside {
+  margin-block-start: var(--sp-6);
+  padding-block-start: var(--sp-4);
+  border-block-start: 1px solid var(--line);
+  max-width: 46ch;
+  color: var(--ink-2);
+  font-size: var(--step-0);
 }
 
 .hero figure {
@@ -304,12 +347,21 @@ section {
   font-weight: 600;
   font-size: var(--step-0);
   white-space: nowrap;
-  transition: background var(--dur-2) var(--ease);
+  transition:
+    color var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease);
+}
+
+/* Наведение — чернильная подсечка снизу, без заливки. Белая плашка на
+   утопленной полосе вырезала в ней прямоугольную дыру, а красный текст
+   тратил сигнал на навигацию. */
+.band a {
+  box-shadow: inset 0 -2px 0 transparent;
 }
 
 .band a:hover {
-  background: var(--paper-raised);
-  color: var(--accent-ink);
+  color: var(--ink);
+  box-shadow: inset 0 -2px 0 var(--line-strong);
 }
 
 .band a:first-child {
@@ -343,7 +395,7 @@ section {
 }
 
 .h-card:hover {
-  border-color: var(--accent);
+  border-color: var(--line-strong);
   transform: translateY(-2px);
   color: var(--ink);
 }
@@ -377,7 +429,7 @@ section {
   text-decoration: none;
   font-weight: 700;
   font-size: var(--step-0);
-  color: var(--accent-ink);
+  color: var(--ink);
   transition: gap var(--dur-2) var(--ease);
 }
 
@@ -558,14 +610,80 @@ section {
   cursor: progress;
 }
 
-/* ---- Покажите деталь ---------------------------------------------------
-   Главное действие сайта: по снимку деталь опознаётся быстрее, чем по
-   любому описанию. Зона загрузки и превью снимка — те самые места, где
-   стоят угловые метки: они значат «сюда помещается предмет». */
+/* ---- Приёмная ----------------------------------------------------------
+   Главный экран сайта — видоискатель, а не форма. Шаги раскрываются по
+   одному: пока человек не показал деталь, решать ему нечего.
 
-.shot {
+   Без JS все шаги видны сразу — форма остаётся рабочей. */
+
+.intake {
   display: grid;
-  gap: var(--sp-3);
+  gap: var(--sp-6);
+  max-width: 46rem;
+}
+
+/* Шаг — это <section>, но не раздел страницы: общая отбивка снизу,
+   которой разделены секции, здесь рисовала бы линию под каждым шагом. */
+.step {
+  display: grid;
+  gap: var(--sp-4);
+  border: 0;
+}
+
+/* Появление шага — выдвижение ящика на направляющих, без пружины. */
+.step[data-revealed] {
+  animation: step-in var(--dur-4) var(--ease-drawer) both;
+}
+
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.step__head {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.step__head h3 {
+  font-size: var(--step-2);
+}
+
+.step__alt {
+  margin: 0;
+  font-size: var(--step-0);
+  color: var(--ink-2);
+}
+
+/* Кнопка, которая ведёт себя как ссылка: «опишите словами» — это запасной
+   путь, а не второе главное действие, и кнопкой выглядеть не должен. */
+.linkish {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line-metal);
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+}
+
+.linkish:hover {
+  color: var(--accent-ink);
+  text-decoration-color: currentColor;
+}
+
+/* Моно-лейбл шага. Прописные тут — выключка на трекинге, а не крик. */
+.ds-label {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  font-weight: 500;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-3);
 }
 
 /* Зона — это <label>, но не подпись к графе: общий стиль лейбла (моно,
@@ -574,9 +692,9 @@ section {
 .shot-zone {
   display: grid;
   place-items: center;
-  gap: var(--sp-2);
-  min-height: 128px;
-  padding: var(--sp-5);
+  gap: var(--sp-3);
+  min-height: 320px;
+  padding: var(--sp-7) var(--sp-5);
   background: var(--paper-sunken);
   border-radius: var(--r-md);
   text-align: center;
@@ -587,25 +705,92 @@ section {
   letter-spacing: normal;
   text-transform: none;
   color: var(--ink);
-  transition: background var(--dur-2) var(--ease);
+  transition: background var(--dur-3) var(--ease);
 }
 
-.shot-zone:hover,
-.shot-zone.is-active {
+.shot-zone:hover {
   background: var(--paper-raised);
 }
 
+/* Файл над зоной — единственное место, где метки краснеют: система
+   разрешает сигнал ровно на приёме детали. */
+.shot-zone.is-active {
+  background: var(--accent-soft);
+}
+
 .shot-zone b {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  font-weight: 800;
+  line-height: var(--lh-heading);
+  letter-spacing: var(--tracking-heading);
+}
+
+.shot-zone__hint {
+  color: var(--ink-2);
+  font-size: var(--step-0);
+  max-width: 34ch;
+}
+
+.shot-zone .btn {
+  margin-block-start: var(--sp-2);
+  pointer-events: none;
+}
+
+/* ---- Что на фотографии -------------------------------------------------
+   Четыре ответа обычными словами вместо выпадающего списка типов работ:
+   человек, у которого «ящик перестал ездить», не выбирает «услуга». */
+
+.tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+}
+
+.tile {
+  display: grid;
+  gap: var(--sp-1);
+  align-content: start;
+  min-height: 92px;
+  padding: var(--sp-4);
+  background: var(--paper-raised);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-lg);
+  text-align: start;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-2) var(--ease),
+    background var(--dur-2) var(--ease),
+    transform var(--dur-2) var(--ease);
+}
+
+.tile:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
+}
+
+/* Выбранное — чернильная заливка, а не красная обводка. */
+.tile[aria-pressed='true'] {
+  background: var(--paper-invert);
+  border-color: var(--paper-invert);
+  color: var(--ink-invert);
+  transform: none;
+}
+
+.tile b {
   font-family: var(--font-display);
   font-size: var(--step-1);
   font-weight: 700;
   letter-spacing: var(--tracking-heading);
 }
 
-.shot-zone span {
+.tile span {
   color: var(--ink-2);
-  font-size: var(--step-0);
-  max-width: 34ch;
+  font-size: var(--step--1);
+}
+
+.tile[aria-pressed='true'] span {
+  color: var(--zinc-300);
 }
 
 .shot-zone input[type='file'] {
@@ -629,6 +814,27 @@ section {
   display: none;
 }
 
+.shot-more {
+  aspect-ratio: 1;
+  border: 1.5px dashed var(--line-metal);
+  border-radius: var(--r-sm);
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-2) var(--ease),
+    color var(--dur-2) var(--ease);
+}
+
+.shot-more:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
 .shot-item {
   position: relative;
   aspect-ratio: 1;
@@ -646,19 +852,20 @@ section {
 
 /* Снять снимок — действие разрушительное, поэтому подписано крестом,
    а не иконкой: иконочного шрифта на сайте нет. */
+/* Снять снимок — мелкое служебное действие, а не второе по важности на
+   экране: кнопка не должна занимать половину превью. */
 .shot-item button {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: var(--tap-min);
-  height: var(--tap-min);
+  top: var(--sp-1);
+  right: var(--sp-1);
+  width: 26px;
+  height: 26px;
   display: grid;
   place-items: center;
   color: var(--ink-invert);
-  background: color-mix(in srgb, var(--ink-900) 72%, transparent);
-  border-end-start-radius: var(--r-md);
-  border-start-end-radius: var(--r-sm);
-  font-size: var(--step-1);
+  background: color-mix(in srgb, var(--ink-900) 68%, transparent);
+  border-radius: var(--r-sm);
+  font-size: var(--step-0);
   line-height: 1;
 }
 
@@ -691,8 +898,8 @@ section {
   padding: var(--sp-3) var(--sp-5);
   border: 0;
   border-radius: var(--r-md);
-  background: var(--accent-fill);
-  color: var(--accent-on);
+  background: var(--paper-invert);
+  color: var(--ink-invert);
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--step-0);
@@ -701,7 +908,7 @@ section {
 }
 
 .vbtn:hover {
-  background: var(--accent-fill-hover);
+  background: var(--ink-800);
 }
 
 .vbtn[disabled] {
@@ -771,7 +978,7 @@ audio {
   padding: var(--sp-5);
   background: var(--paper-raised);
   border: 1px solid var(--line);
-  border-inline-start: 3px solid var(--accent);
+  border-inline-start: 3px solid var(--line-strong);
   border-radius: var(--r-md);
 }
 
@@ -830,12 +1037,12 @@ audio {
 }
 
 .m:hover {
-  border-color: var(--accent);
+  border-color: var(--line-strong);
 }
 
 .m.on {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
+  border-color: var(--line-strong);
+  box-shadow: 0 0 0 1px var(--line-strong);
 }
 
 /* Схема лежит на бумажном мате, как чертёж на подложке, и рисуется
@@ -933,8 +1140,8 @@ audio {
   gap: var(--sp-3);
   margin-inline: var(--sp-5);
   padding-inline: var(--sp-4);
-  background: var(--accent-fill);
-  color: var(--accent-on);
+  background: var(--paper-invert);
+  color: var(--ink-invert);
   border-radius: var(--r-md);
   font-weight: 700;
   font-size: var(--step-0);
@@ -949,7 +1156,7 @@ audio {
 }
 
 .m.on:hover .go {
-  background: var(--accent-fill-hover);
+  background: var(--ink-800);
 }
 
 /* Подпись «подробнее» подсказывает, что карточка раскрывается, и
@@ -1006,7 +1213,7 @@ audio {
 
 .tab[aria-selected='true'] {
   color: var(--ink);
-  border-block-end-color: var(--accent);
+  border-block-end-color: var(--line-strong);
 }
 
 .panel[hidden] {
@@ -1051,12 +1258,12 @@ audio {
 }
 
 .chip:hover {
-  border-color: var(--accent);
+  border-color: var(--line-strong);
 }
 
 .chip[aria-pressed='true'] {
   background: var(--paper-sunken);
-  box-shadow: inset 0 0 0 1px var(--accent);
+  box-shadow: inset 0 0 0 1.5px var(--line-strong);
 }
 
 /* У плитки места рамки нет — её роль играют уголки, и они же краснеют
@@ -1121,13 +1328,13 @@ audio {
 }
 
 .p:hover {
-  border-color: var(--accent);
+  border-color: var(--line-strong);
   transform: translateY(-2px);
 }
 
 .p.on {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
+  border-color: var(--line-strong);
+  box-shadow: 0 0 0 1px var(--line-strong);
 }
 
 .p .art {
@@ -1177,7 +1384,7 @@ audio {
   margin: var(--sp-4) var(--sp-5) var(--sp-5);
   font-weight: 700;
   font-size: var(--step-0);
-  color: var(--accent-ink);
+  color: var(--ink);
   transition: gap var(--dur-2) var(--ease);
 }
 
@@ -1192,7 +1399,7 @@ audio {
   display: none;
   scroll-margin-top: calc(var(--header-h) + var(--sp-5));
   background: var(--paper-raised);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--line-strong);
   border-radius: var(--r-md);
   overflow: hidden;
 }
@@ -1336,7 +1543,7 @@ audio {
 .q summary::after {
   content: '+';
   margin-inline-start: auto;
-  color: var(--accent);
+  color: var(--ink-3);
   font-weight: 700;
   font-size: var(--step-3);
   line-height: 1;
@@ -1383,7 +1590,7 @@ audio {
 }
 
 .rel a span {
-  color: var(--accent);
+  color: var(--ink-3);
 }
 
 /* ---- 3D ---------------------------------------------------------------- */
@@ -1425,8 +1632,8 @@ audio {
   justify-self: start;
   min-height: var(--tap-comfortable);
   padding: var(--sp-3) var(--sp-5);
-  background: var(--accent-fill);
-  color: var(--accent-on);
+  background: var(--paper-invert);
+  color: var(--ink-invert);
   border-radius: var(--r-md);
   font-weight: 700;
   font-size: var(--step-0);
@@ -1434,7 +1641,7 @@ audio {
 }
 
 .stage3d:hover .lab {
-  background: var(--accent-fill-hover);
+  background: var(--ink-800);
 }
 
 .stage3d .sub2 {
@@ -1493,9 +1700,16 @@ footer {
 
 footer .wrap {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
   gap: var(--sp-7);
   padding-block: var(--sp-8) var(--sp-7);
+}
+
+/* Телефон в подвале — моно и крупнее ссылок: это не пункт списка. */
+.foot-tel {
+  font-family: var(--font-mono);
+  font-size: var(--step-1);
+  margin-block-end: var(--sp-1);
 }
 
 footer a {
@@ -1578,6 +1792,12 @@ footer .dimf {
   }
   .bar nav > a:not(.btn),
   .drop {
+    display: none;
+  }
+
+  /* На телефоне телефон живёт в липкой полосе внизу — в шапке он только
+     отнимал бы место у действия. */
+  .bar-tel {
     display: none;
   }
 

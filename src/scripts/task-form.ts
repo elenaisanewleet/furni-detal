@@ -21,6 +21,35 @@ const TEL = '+79851982945';
 
 const root = document.getElementById('zayavka');
 
+/* ----------------------------------------------------------------- шаги */
+
+/**
+ * Шаги прячет скрипт, а не разметка: без JS форма должна остаться рабочей,
+ * а `hidden` в разметке оставил бы человека с одной зоной загрузки, которая
+ * без скрипта ничего не раскрывает.
+ */
+const steps = Array.from(document.querySelectorAll<HTMLElement>('.step'));
+const live = document.getElementById('intake-live');
+
+const stepEl = (n: number) => steps.find((s) => s.dataset.step === String(n));
+
+function hideFrom(n: number) {
+  steps.forEach((s) => {
+    if (Number(s.dataset.step) >= n) s.hidden = true;
+  });
+}
+
+/** Раскрывает шаг и объявляет его — экранному диктору тоже нужно знать. */
+function reveal(n: number, announce?: string) {
+  const el = stepEl(n);
+  if (!el || !el.hidden) return;
+  el.hidden = false;
+  el.dataset.revealed = '1';
+  if (announce && live) live.textContent = announce;
+}
+
+if (steps.length) hideFrom(2);
+
 /** Куда отправлять заявку. Пусто — работаем без сервера. */
 const ENDPOINT = root?.dataset.endpoint || '';
 
@@ -50,6 +79,7 @@ function renderShots() {
   const box = $<HTMLElement>('shots');
   if (!box) return;
   box.innerHTML = '';
+
   shots.forEach((file, i) => {
     const item = document.createElement('div');
     item.className = 'shot-item';
@@ -71,6 +101,22 @@ function renderShots() {
     item.append(img, del);
     box.appendChild(item);
   });
+
+  /* Плитка «ещё» вместо большой зоны: показывать её на всю ширину, когда
+     снимок уже есть, значит просить то, что человек только что сделал. */
+  if (shots.length && shots.length < MAX_FILES) {
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'shot-more';
+    more.textContent = '+ ещё';
+    more.onclick = () => fileInput?.click();
+    box.appendChild(more);
+  }
+
+  /* Первый шаг сворачивается, как только деталь показана: рамка на том же
+     месте становится следующим шагом, а не остаётся висеть над ним. */
+  const first = stepEl(1);
+  if (first) first.hidden = shots.length > 0;
 }
 
 function addFiles(list: FileList | null) {
@@ -82,7 +128,38 @@ function addFiles(list: FileList | null) {
     shots.push(file);
   }
   renderShots();
+  // Снимок попал внутрь — и та же рамка на том же месте становится
+  // следующим шагом. Отдельной страницы для этого не нужно.
+  if (shots.length) reveal(2, 'Фото загружено. Второй шаг: что на фотографии?');
 }
+
+/* Запасной путь для тех, кому нечего снять: тот же поток, без первого шага. */
+document.getElementById('skip-shot')?.addEventListener('click', () => {
+  reveal(2, 'Второй шаг: что на фотографии?');
+  reveal(3);
+  reveal(4);
+  stepEl(3)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  $<HTMLTextAreaElement>('f-task')?.focus({ preventScroll: true });
+});
+
+/* ---- что на фотографии ---- */
+
+/** Ответ человека своими словами — уходит в заявку вместе с темой. */
+let answer = '';
+
+document.getElementById('answers')?.addEventListener('click', (e) => {
+  const tile = (e.target as HTMLElement).closest<HTMLElement>('[data-answer]');
+  if (!tile) return;
+
+  answer = tile.dataset.answer || '';
+  document
+    .querySelectorAll<HTMLElement>('[data-answer]')
+    .forEach((t) => t.setAttribute('aria-pressed', String(t === tile)));
+
+  reveal(3, 'Третий шаг: опишите задачу парой слов или голосом.');
+  reveal(4);
+  stepEl(3)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+});
 
 const fileInput = $<HTMLInputElement>('f-shots');
 fileInput?.addEventListener('change', () => {
@@ -130,17 +207,15 @@ function localNo(): string {
 
 function letter(no: string): string {
   const topic = $<HTMLInputElement>('f-topic')?.value || '';
-  return (
-    'Заявка ' +
-    no +
-    (topic ? ' · ' + topic : '') +
-    '\nИмя: ' +
-    val('f-name') +
-    '\nСвязь: ' +
-    val('f-contact') +
-    '\nЗадача: ' +
-    val('f-task')
-  );
+  const lines = ['Заявка ' + no + (topic ? ' · ' + topic : '')];
+
+  // Ответ со второго шага — то, ради чего его и спрашивали: он говорит
+  // мастеру, что делать с фотографией, ещё до того как её открыли.
+  if (answer) lines.push('На фото: ' + answer);
+  if (shots.length) lines.push('Снимков: ' + shots.length);
+
+  lines.push('Имя: ' + val('f-name'), 'Связь: ' + val('f-contact'), 'Задача: ' + val('f-task'));
+  return lines.join('\n');
 }
 
 /* ------------------------------------------------------------ отправка */
@@ -159,6 +234,7 @@ async function submit(channel: Channel): Promise<LeadResult> {
   form.set('contact', $<HTMLInputElement>('f-contact')?.value.trim() || '');
   form.set('task', $<HTMLTextAreaElement>('f-task')?.value.trim() || '');
   form.set('topic', $<HTMLInputElement>('f-topic')?.value || '');
+  form.set('answer', answer);
   form.set('channel', channel);
   form.set('page', location.pathname);
   form.set('company', $<HTMLInputElement>('f-company')?.value || '');
@@ -202,7 +278,7 @@ function confirmBox(no: string, channel: Channel, delivered: boolean, text: stri
     box.className = 'okbox';
     box.id = 'okbox';
     box.setAttribute('role', 'status');
-    host.querySelector('.pane')?.appendChild(box);
+    (stepEl(4) || host).appendChild(box);
   }
 
   box.className = delivered ? 'okbox' : 'okbox err';
@@ -321,14 +397,17 @@ export function setTopic(topic: string, task?: string) {
   if (field) field.value = topic;
 
   const area = $<HTMLTextAreaElement>('f-task');
-  if (area) {
-    if (task && !area.value) area.value = task;
-    if (!area.value) area.placeholder = `Например: ${topic.toLowerCase()} — опишите деталь и количество`;
-  }
+  if (area && task && !area.value) area.value = task;
 
-  const host = $<HTMLElement>('zayavka');
-  if (!host) return;
-  const top = host.getBoundingClientRect().top + window.scrollY - 80;
+  /* Человек пришёл сюда со страницы станка или из определителя — он уже
+     знает, что ему нужно, и первый шаг ему не нужен. Раскрываем всё. */
+  reveal(2);
+  reveal(3);
+  reveal(4);
+
+  const target = stepEl(3) || $<HTMLElement>('zayavka');
+  if (!target) return;
+  const top = target.getBoundingClientRect().top + window.scrollY - 90;
   window.scrollTo({ top, behavior: 'smooth' });
   area?.focus({ preventScroll: true });
 }

@@ -120,11 +120,14 @@ h1 {
   margin-block-end: var(--sp-5);
 }
 
-/* Слово, ради которого страница написана: единственное сигнальное пятно
-   в заголовке. Курсивом не набирается — только цветом. */
+/* Слово, ради которого написана страница. Курсивом не набирается и
+   красным тоже: сигнальный цвет в системе означает «сюда положите деталь»
+   и на заголовки не тратится — иначе на экране два красных пятна и ни
+   одно не главное. Выделение делает волосяная черта под словом. */
 h1 em {
   font-style: normal;
-  color: var(--accent-ink);
+  color: inherit;
+  box-shadow: inset 0 -0.09em 0 var(--line-metal);
 }
 
 h2 {
@@ -148,16 +151,29 @@ p {
   text-wrap: pretty;
 }
 
+/* Ссылка в тексте — чернилами и подчёркиванием, а не красным. Красный
+   в системе значит «сюда положите деталь»; если им же набраны все ссылки
+   подряд, значить он перестаёт. Сигнал появляется только при наведении. */
 a {
-  color: var(--accent-ink);
-  text-decoration: none;
+  color: var(--ink);
+  text-decoration: underline;
   text-decoration-thickness: 1px;
+  text-decoration-color: var(--line-metal);
   text-underline-offset: 0.18em;
-  transition: color var(--dur-2) var(--ease);
+  transition:
+    color var(--dur-2) var(--ease),
+    text-decoration-color var(--dur-2) var(--ease);
 }
 
 a:hover {
-  color: var(--ink);
+  color: var(--accent-ink);
+  text-decoration-color: currentColor;
+}
+
+/* Ссылки-компоненты (карточки, кнопки, меню) подчёркивание не носят —
+   их границы рисует сам компонент. */
+:is(.btn, .h-card, .rel a, .band a, .chip, .p, .stage3d, .logo, .bar nav a, .drop menu a, .sticky a, footer a, .crumbs a, .tab) {
+  text-decoration: none;
 }
 
 /* ---- Фокус -------------------------------------------------------------
