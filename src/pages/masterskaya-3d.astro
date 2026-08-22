@@ -1,0 +1,166 @@
+---
+import Stage3d from '~/layouts/Stage3d.astro';
+---
+
+<Stage3d
+  title="3D-модель мастерской — Мастерская Архангельское"
+  description="Интерактивная 3D-модель основной рабочей комнаты мастерской: станки, верстак, склад фурнитуры, зона фасовки. Ульяновская область, село Архангельское."
+  canonical="/masterskaya-3d/"
+  heading="Мастерская целиком"
+  standfirst="Три помещения и вид снаружи, собранные по фотографиям. Сверху — виды камеры по кадрам, справа — зоны: нажмите, и камера подлетит к нужному месту."
+  hint="Тянуть — вращать, колесо — приближать, правая кнопка — сдвиг."
+>
+  <a slot="nav" class="btn line" href="/katalog-3d/">Каталог объектов</a>
+
+  <Fragment slot="stage">
+    <three-d-stage id="stage" name="masterskaya-room2"></three-d-stage>
+    <div class="views" id="views"></div>
+    <div class="light" id="light">
+      <button data-mode="day" class="on" type="button">День</button>
+      <button data-mode="night" type="button">Вечер</button>
+    </div>
+  </Fragment>
+
+  <div class="zones" id="zones"></div>
+
+  {/* is:inline обязателен: модель и three резолвятся картой импортов
+      в браузере, а не сборщиком — Vite попытался бы разрешить их сам. */}
+  <script slot="script" type="module" is:inline>
+    const stage = document.querySelector('#stage');
+    const { THREE } = await stage.ready;
+    const { buildMaster, HOTSPOTS, VIEWS, PENDANT_POSITIONS } = await import(
+      '/model3d/workshop-model.js'
+    );
+
+    stage.setObject(buildMaster());
+
+    const camera = stage._camera;
+    const controls = stage._controls;
+    const scene = stage._scene;
+
+    /* Фон сцены — та же бумага, что у страницы, поэтому берётся из токена:
+       так 3D не выпадает из палитры и следует за тёмной темой. */
+    const css = (name, fallback) =>
+      getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+
+    const sr = stage.shadowRoot;
+    const note = sr.querySelector('.note');
+    if (note) note.style.display = 'none';
+    const toolbar = sr.querySelector('.toolbar');
+    if (toolbar) {
+      const b = toolbar.querySelectorAll('button');
+      if (b[0]) b[0].textContent = 'Скачать OBJ + MTL';
+      if (b[1]) b[1].textContent = 'Скачать GLB';
+    }
+
+    /* Плавный перелёт камеры. Таймер, а не requestAnimationFrame: в
+       неактивной вкладке rAF не вызывается, и перелёт зависал бы на полпути. */
+    let flight = null;
+    function flyTo(cam, target) {
+      const p0 = camera.position.clone();
+      const t0 = controls.target.clone();
+      const p1 = new THREE.Vector3().fromArray(cam);
+      const t1 = new THREE.Vector3().fromArray(target);
+      const started = performance.now();
+      const DUR = 850;
+      if (flight) clearInterval(flight);
+      flight = setInterval(() => {
+        const k = Math.min(1, (performance.now() - started) / DUR);
+        const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        camera.position.lerpVectors(p0, p1, e);
+        controls.target.lerpVectors(t0, t1, e);
+        controls.update();
+        if (k >= 1) {
+          clearInterval(flight);
+          flight = null;
+        }
+      }, 16);
+    }
+
+    const vwrap = document.getElementById('views');
+    VIEWS.forEach((v, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip' + (i === 0 ? ' on' : '');
+      b.textContent = v.label;
+      b.onclick = () => {
+        vwrap.querySelectorAll('.chip').forEach((x) => x.classList.remove('on'));
+        b.classList.add('on');
+        document.querySelectorAll('.zone.on').forEach((z) => z.classList.remove('on'));
+        flyTo(v.cam, v.target);
+      };
+      vwrap.appendChild(b);
+    });
+    setTimeout(() => flyTo(VIEWS[0].cam, VIEWS[0].target), 240);
+
+    const zwrap = document.getElementById('zones');
+    HOTSPOTS.forEach((h) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'zone';
+      b.innerHTML = '<b></b><p></p>';
+      b.querySelector('b').textContent = h.title;
+      b.querySelector('p').textContent = h.text;
+      b.onclick = () => {
+        const open = b.classList.contains('on');
+        zwrap.querySelectorAll('.zone').forEach((x) => x.classList.remove('on'));
+        vwrap.querySelectorAll('.chip').forEach((x) => x.classList.remove('on'));
+        if (!open) {
+          b.classList.add('on');
+          flyTo(h.cam, h.at);
+        }
+      };
+      zwrap.appendChild(b);
+    });
+
+    /* День и вечер: одна сцена, два состояния света. */
+    const hemi = scene.children.find((o) => o.isHemisphereLight);
+    const key = stage._key;
+    const fill = scene.children.filter((o) => o.isDirectionalLight).find((o) => o !== key);
+
+    const bulbs = [];
+    stage._object.traverse((o) => {
+      if (o.isMesh && o.name.indexOf('pendant_bulb') === 0) bulbs.push(o);
+    });
+
+    const lamps = PENDANT_POSITIONS.map((p) => {
+      const l = new THREE.PointLight(0xffc98a, 0, 7.5, 2);
+      l.position.set(p[0], p[1], p[2]);
+      scene.add(l);
+      return l;
+    });
+
+    const warm = new THREE.PointLight(0xffb26a, 0, 6, 2);
+    warm.position.set(-2.1, 1.5, 0.4);
+    scene.add(warm);
+
+    function setLight(mode) {
+      const night = mode === 'night';
+      if (hemi) {
+        hemi.intensity = night ? 0.24 : 1.0;
+        hemi.color.set(night ? 0x35404f : 0xffffff);
+        hemi.groundColor.set(night ? 0x2a221a : 0xd8d2c4);
+      }
+      if (key) {
+        key.intensity = night ? 0.3 : 2.2;
+        key.color.set(night ? 0xa8bcd8 : 0xffffff);
+      }
+      if (fill) fill.intensity = night ? 0.12 : 0.5;
+      lamps.forEach((l) => (l.intensity = night ? 9 : 0));
+      warm.intensity = night ? 4 : 0;
+      bulbs.forEach((b) => {
+        if (b.material) b.material.emissiveIntensity = night ? 1.7 : 0.15;
+      });
+      if (stage._ground) stage._ground.material.opacity = night ? 0.1 : 0.18;
+      stage.style.setProperty('--stage-bg', night ? '#241f1a' : css('--paper-sunken', '#e3e8ec'));
+      document
+        .querySelectorAll('#light button')
+        .forEach((x) => x.classList.toggle('on', x.dataset.mode === mode));
+    }
+
+    document
+      .querySelectorAll('#light button')
+      .forEach((x) => (x.onclick = () => setLight(x.dataset.mode)));
+    setLight('day');
+  </script>
+</Stage3d>

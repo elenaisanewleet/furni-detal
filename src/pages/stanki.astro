@@ -1,0 +1,52 @@
+---
+import Base from '~/layouts/Base.astro';
+import MachineGrid from '~/components/MachineGrid.astro';
+import TaskForm from '~/components/TaskForm.astro';
+
+const title = 'Станки мастерской и что на них можно сделать — Мастерская Архангельское';
+const description =
+  'Схемы реальных станков мастерской: сверлильный станок, рычажный пресс, точильно-шлифовальный станок, торцовочная пила, приводной агрегат, тиски и зажимы. Нажмите на станок — откроется заявка на эту работу.';
+
+const breadcrumb = [
+  { name: 'Главная', href: '/' },
+  { name: 'Станки', href: '/stanki/' },
+];
+---
+
+<Base
+  title={title}
+  description={description}
+  keywords="сверлильный станок услуги, рычажный пресс запрессовка, точильно-шлифовальный станок заточка, торцовочная пила распил, услуги мастерской Ульяновская область, операции по дереву и металлу"
+  canonical="/stanki/"
+  breadcrumb={breadcrumb}
+>
+  <section>
+    <div class="wrap" style="padding-block:var(--sp-6) var(--section-y-md)">
+      <div class="eyebrow">Оборудование</div>
+      <h1>Станки и то, что на них <em>можно сделать</em></h1>
+      <p class="lead">
+        Схемы реальных станков мастерской. Нажмите на схему — раскроется, что на этом станке
+        делается. Кнопка в карточке подставит название работы в заявку.
+      </p>
+    </div>
+  </section>
+
+  <section class="warmbg">
+    <div class="wrap pad-s">
+      <MachineGrid />
+      <p class="note">Нужна операция, которой нет в списке? Спросите — скажем, получится ли.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap pad-s">
+      <h2>Заявка на работу</h2>
+      <p class="sub">Опишите деталь и количество или надиктуйте голосом.</p>
+      <TaskForm />
+    </div>
+  </section>
+
+  <script>
+    import '~/scripts/machines.ts';
+  </script>
+</Base>

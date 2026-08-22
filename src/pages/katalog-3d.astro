@@ -1,0 +1,83 @@
+---
+import Stage3d from '~/layouts/Stage3d.astro';
+---
+
+<Stage3d
+  title="Каталог объектов мастерской — 3D"
+  description="Каталог объектов мастерской в 3D: станки, верстак и оснастка, крепёж и фурнитура, хранение, личные вещи мастера. Каждый объект можно повращать и скачать."
+  canonical="/katalog-3d/"
+  heading="Каталог объектов"
+  standfirst="Объекты мастерской, собранные по фотографиям: станки, оснастка, крепёж, хранение и личные вещи мастера. Выберите объект — он появится слева, его можно повращать и скачать в OBJ или GLB."
+  hint="Тянуть — вращать, колесо — приближать. Кнопки скачивания — внизу сцены."
+>
+  <a slot="nav" class="btn line" href="/masterskaya-3d/">Мастерская целиком</a>
+
+  <Fragment slot="stage">
+    <three-d-stage id="stage" name="masterskaya-asset" autorotate></three-d-stage>
+    <div class="light" id="light">
+      <button id="spin" class="on" type="button">Вращение</button>
+    </div>
+  </Fragment>
+
+  <div class="zones" id="cat"></div>
+
+  {/* is:inline обязателен: модель и three резолвятся картой импортов
+      в браузере, а не сборщиком — Vite попытался бы разрешить их сам. */}
+  <script slot="script" type="module" is:inline>
+    const stage = document.querySelector('#stage');
+    await stage.ready;
+    const { buildAsset, ASSETS } = await import('/model3d/workshop-model.js');
+
+    const css = (name, fallback) =>
+      getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+    stage.style.setProperty('--stage-bg', css('--paper-sunken', '#e3e8ec'));
+
+    const sr = stage.shadowRoot;
+    const note = sr.querySelector('.note');
+    if (note) note.style.display = 'none';
+    const tb = sr.querySelector('.toolbar');
+    if (tb) {
+      const b = tb.querySelectorAll('button');
+      if (b[0]) b[0].textContent = 'Скачать OBJ + MTL';
+      if (b[1]) b[1].textContent = 'Скачать GLB';
+    }
+
+    const wrap = document.getElementById('cat');
+    const title = document.querySelector('aside h1');
+    const text = document.getElementById('a-text');
+
+    function show(item, btn) {
+      stage.setObject(buildAsset(item.id));
+      stage.setAttribute('name', 'masterskaya-' + item.id);
+      title.textContent = item.label;
+      text.textContent = item.text;
+      wrap.querySelectorAll('.zone').forEach((x) => x.classList.remove('on'));
+      btn.classList.add('on');
+    }
+
+    ASSETS.forEach((group) => {
+      const h = document.createElement('div');
+      h.className = 'group-title';
+      h.textContent = group.group;
+      wrap.appendChild(h);
+
+      group.items.forEach((item) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'zone';
+        b.innerHTML = '<b></b>';
+        b.querySelector('b').textContent = item.label;
+        b.onclick = () => show(item, b);
+        wrap.appendChild(b);
+      });
+    });
+
+    show(ASSETS[0].items[0], wrap.querySelector('.zone'));
+
+    const spin = document.getElementById('spin');
+    spin.onclick = () => {
+      if (spin.classList.toggle('on')) stage.setAttribute('autorotate', '');
+      else stage.removeAttribute('autorotate');
+    };
+  </script>
+</Stage3d>

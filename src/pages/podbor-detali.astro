@@ -1,0 +1,92 @@
+---
+import Base from '~/layouts/Base.astro';
+import PartFinder from '~/components/PartFinder.astro';
+import TaskForm from '~/components/TaskForm.astro';
+import RelatedLinks from '~/components/RelatedLinks.astro';
+import { parts } from '~/data/parts';
+import { faqPage } from '~/lib/schema';
+
+const title =
+  'Как называется деталь мебели — определитель по фото и описанию, Мастерская Архангельское';
+const description =
+  'Не знаете, как называется деталь: петля, направляющая, минификс, полкодержатель, доводчик. Найдите по месту, по своим словам или по тому, что сломалось — со схемами и списком, что сфотографировать.';
+
+const breadcrumb = [
+  { name: 'Главная', href: '/' },
+  { name: 'Подбор детали', href: '/podbor-detali/' },
+];
+
+/**
+ * Вопросы для FAQPage собраны из самих деталей: вопрос «как называется
+ * штука, на которой держится дверца» — ровно тот запрос, с которым сюда
+ * приходят. Разметка и текст на странице совпадают: и то и другое взято
+ * из одних данных.
+ */
+const schema = [
+  faqPage(
+    parts.map((p) => ({
+      q: `Как называется ${p.said.toLowerCase()}?`,
+      a: `${p.term}. ${p.what}`,
+    }))
+  ),
+];
+---
+
+<Base
+  title={title}
+  description={description}
+  keywords="как называется деталь мебели, рельса для ящика название, минификс что это, петля для дверцы шкафа, полкодержатель, доводчик мебельный, определить деталь по фото, подбор мебельной фурнитуры Ульяновск"
+  canonical="/podbor-detali/"
+  breadcrumb={breadcrumb}
+  schema={schema}
+>
+  <section>
+    <div class="wrap" style="padding-block:var(--sp-6) var(--section-y-md)">
+      <div class="eyebrow">Определитель детали</div>
+      <h1>Не знаете, как деталь <em>называется</em> — найдём по описанию</h1>
+      <p class="lead">
+        Каталог наоборот: вход не по артикулу, а по тому, что вы видите и какими словами это
+        называете. Выберите место, наберите своими словами или найдите по тому, что сломалось.
+      </p>
+    </div>
+  </section>
+
+  <section class="warmbg">
+    <div class="wrap pad-s">
+      <PartFinder />
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap pad-s">
+      <h2>Заявка на деталь</h2>
+      <p class="sub">
+        Опишите, что нашли, или пришлите фото — ответим с ценой и сроком. Заявке присваивается
+        номер.
+      </p>
+      <TaskForm
+        placeholder="Опишите деталь: где стоит, что случилось, сколько нужно"
+        hint="Заявке присваивается номер — по нему мы находим вашу задачу в переписке."
+      />
+    </div>
+  </section>
+
+  <section class="warmbg">
+    <div class="wrap pad-s">
+      <h2>Куда дальше</h2>
+      <div style="margin-block-start:var(--sp-6)">
+        <RelatedLinks
+          links={[
+            { href: '/furnitura-i-krepezh/', label: 'Фурнитура и крепёж' },
+            { href: '/remont-mebeli/', label: 'Ремонт и доработка мебели' },
+            { href: '/metallicheskie-uzly/', label: 'Металлические узлы' },
+          ]}
+        />
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import '~/scripts/part-finder.ts';
+  </script>
+</Base>

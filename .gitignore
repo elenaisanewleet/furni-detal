@@ -1,0 +1,16 @@
+# сборка
+dist/
+.astro/
+.vercel/
+
+# зависимости
+node_modules/
+
+# окружение
+.env
+.env.local
+.env.*.local
+
+# системное
+.DS_Store
+*.log

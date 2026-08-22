@@ -1,0 +1,397 @@
+---
+import '~/styles/fonts.css';
+import '~/styles/tokens.css';
+
+import { site } from '~/data/site';
+import { originOf } from '~/lib/origin';
+
+/**
+ * Лейаут двух 3D-страниц.
+ *
+ * Они устроены иначе, чем остальной сайт: это приложение во весь экран,
+ * без прокрутки, с собственной узкой шапкой. Общие шапка и подвал сюда
+ * не подходят — 3D вынесена на отдельные страницы именно потому, что на
+ * общей она роняла плавность прокрутки.
+ *
+ * three.js лежит локально, в /vendor/three: из России до CDN достаём не
+ * всегда, а страница без библиотеки — пустой экран.
+ */
+
+interface Props {
+  title: string;
+  description: string;
+  canonical: string;
+  /** Заголовок правой колонки. */
+  heading: string;
+  /** Пояснение под заголовком. */
+  standfirst: string;
+  /** Подсказка по управлению внизу колонки. */
+  hint: string;
+}
+
+const { title, description, canonical, heading, standfirst, hint } = Astro.props;
+
+const origin = originOf(Astro.site);
+const canonicalUrl = new URL(canonical, Astro.site).toString();
+
+const schema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  url: canonicalUrl,
+  name: title,
+  description,
+  isPartOf: { '@id': new URL('#website', origin).toString() },
+  about: { '@id': new URL('#org', origin).toString() },
+});
+---
+
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#eef1f3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16151a" media="(prefers-color-scheme: dark)" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.brand.name} />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={new URL('/og.jpg', Astro.site).toString()} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="preload" href="/fonts/golos-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
+
+    <script type="importmap" is:inline>
+      {
+        "imports": {
+          "three": "/vendor/three/three.module.min.js",
+          "three/addons/controls/OrbitControls.js": "/vendor/three/addons/controls/OrbitControls.js",
+          "three/addons/exporters/OBJExporter.js": "/vendor/three/addons/exporters/OBJExporter.js",
+          "three/addons/exporters/GLTFExporter.js": "/vendor/three/addons/exporters/GLTFExporter.js"
+        }
+      }
+    </script>
+
+    <script type="application/ld+json" set:html={schema} is:inline />
+  </head>
+
+  <body class="stage-page">
+    <div class="bar">
+      <a class="logo" href="/">{site.brand.name}</a>
+      <div class="right">
+        <a class="btn line" href="/">← На сайт</a>
+        <slot name="nav" />
+        <a class="btn" href="/zakaz/">Оставить заявку</a>
+      </div>
+    </div>
+
+    <main>
+      <div class="stage-wrap">
+        <slot name="stage" />
+      </div>
+      <aside>
+        <h1>{heading}</h1>
+        <p class="sub" id="a-text">{standfirst}</p>
+        <slot />
+        <p class="hint">{hint}</p>
+      </aside>
+    </main>
+
+    <script src="/model3d/three-d-stage.js" is:inline></script>
+    <slot name="script" />
+  </body>
+</html>
+
+<style is:global>
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body.stage-page {
+    height: 100%;
+    margin: 0;
+  }
+
+  body.stage-page {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: var(--step-0);
+    line-height: var(--lh-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .stage-page a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .stage-page .bar {
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-5);
+    padding: var(--sp-3) var(--sp-6);
+    background: var(--paper);
+    border-block-end: 1px solid var(--line);
+  }
+
+  /* Марка — слово, не знак: логотипа у мастерской нет. */
+  .stage-page .bar .logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: var(--step-1);
+    letter-spacing: -0.05em;
+  }
+
+  .stage-page .bar .right {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-inline-start: auto;
+  }
+
+  .stage-page .btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+    padding: var(--sp-3) var(--sp-5);
+    background: var(--accent-fill);
+    color: var(--accent-on);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--step-0);
+    border-radius: var(--r-md);
+    white-space: nowrap;
+    transition: background var(--dur-2) var(--ease);
+  }
+
+  .stage-page .btn:hover {
+    background: var(--accent-fill-hover);
+    color: var(--accent-on);
+  }
+
+  .stage-page .btn.line {
+    background: transparent;
+    color: var(--ink);
+    box-shadow: inset 0 0 0 1.5px var(--line-metal);
+  }
+
+  .stage-page .btn.line:hover {
+    background: var(--paper-sunken);
+    color: var(--ink);
+  }
+
+  .stage-page main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 330px;
+    min-height: 0;
+  }
+
+  .stage-page .stage-wrap {
+    position: relative;
+    min-height: 0;
+    background: var(--paper-sunken);
+  }
+
+  .stage-page three-d-stage:not(:defined) {
+    visibility: hidden;
+  }
+
+  .stage-page three-d-stage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .stage-page .views {
+    position: absolute;
+    left: var(--sp-4);
+    top: var(--sp-4);
+    right: var(--sp-4);
+    z-index: 3;
+    display: flex;
+    gap: var(--sp-2);
+    overflow-x: auto;
+    padding-block-end: var(--sp-1);
+    scrollbar-width: thin;
+  }
+
+  /* Здесь pill уместен: это чипы, единственная форма, которой он разрешён. */
+  .stage-page .chip {
+    padding: var(--sp-2) var(--sp-4);
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--line-metal);
+    border-radius: var(--r-pill);
+    font-family: var(--font-display);
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .stage-page .chip:hover {
+    border-color: var(--accent);
+  }
+
+  .stage-page .chip.on {
+    background: var(--ink);
+    color: var(--ink-invert);
+    border-color: var(--ink);
+  }
+
+  .stage-page .light {
+    position: absolute;
+    left: var(--sp-4);
+    bottom: var(--sp-4);
+    z-index: 3;
+    display: flex;
+    gap: var(--sp-1);
+    padding: var(--sp-1);
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--line-metal);
+    border-radius: var(--r-pill);
+  }
+
+  .stage-page .light button {
+    padding: var(--sp-2) var(--sp-4);
+    border: 0;
+    border-radius: var(--r-pill);
+    background: transparent;
+    font-family: var(--font-display);
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .stage-page .light button.on {
+    background: var(--accent-fill);
+    color: var(--accent-on);
+  }
+
+  .stage-page aside {
+    overflow-y: auto;
+    padding: var(--sp-5) var(--sp-5) var(--sp-7);
+    background: var(--paper-raised);
+    border-inline-start: 1px solid var(--line);
+  }
+
+  .stage-page aside h1 {
+    margin: 0 0 var(--sp-1);
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    font-weight: 800;
+    line-height: var(--lh-heading);
+    letter-spacing: var(--tracking-heading);
+  }
+
+  .stage-page aside .sub {
+    margin: 0 0 var(--sp-5);
+    color: var(--ink-2);
+    font-size: var(--step-0);
+  }
+
+  .stage-page .zones {
+    display: grid;
+    gap: var(--sp-2);
+  }
+
+  .stage-page .group-title {
+    margin: var(--sp-5) 0 var(--sp-1);
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .stage-page .zone {
+    width: 100%;
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    text-align: start;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    transition: border-color var(--dur-2) var(--ease);
+  }
+
+  .stage-page .zone:hover {
+    border-color: var(--accent);
+  }
+
+  .stage-page .zone.on {
+    border-color: var(--accent);
+    background: var(--paper-sunken);
+  }
+
+  .stage-page .zone b {
+    display: block;
+    font-family: var(--font-display);
+    font-size: var(--step-0);
+    font-weight: 700;
+  }
+
+  /* Описание зоны разворачивается движением ящика на направляющих —
+     механически, без пружины. */
+  .stage-page .zone p {
+    margin: 0;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    color: var(--ink-2);
+    font-size: var(--step--1);
+    transition:
+      max-height var(--dur-4) var(--ease-drawer),
+      opacity var(--dur-3) var(--ease),
+      margin var(--dur-3) var(--ease);
+  }
+
+  .stage-page .zone.on p {
+    max-height: 240px;
+    opacity: 1;
+    margin-block-start: var(--sp-2);
+  }
+
+  .stage-page .hint {
+    margin-block-start: var(--sp-5);
+    color: var(--ink-3);
+    font-size: var(--step--1);
+  }
+
+  @media (max-width: 56.25rem) {
+    .stage-page main {
+      grid-template-columns: 1fr;
+      grid-template-rows: minmax(320px, 52vh) 1fr;
+    }
+    .stage-page aside {
+      border-inline-start: 0;
+      border-block-start: 1px solid var(--line);
+    }
+    body.stage-page {
+      overflow: auto;
+    }
+  }
+</style>

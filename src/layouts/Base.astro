@@ -1,0 +1,128 @@
+---
+import '~/styles/fonts.css';
+import '~/styles/tokens.css';
+import '~/styles/base.css';
+import '~/styles/site.css';
+
+import Header from '~/components/Header.astro';
+import Footer from '~/components/Footer.astro';
+import StickyCta from '~/components/StickyCta.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+
+import { site } from '~/data/site';
+import { localBusiness, webSite, breadcrumbs, graph } from '~/lib/schema';
+import { originOf } from '~/lib/origin';
+
+interface Props {
+  title: string;
+  description: string;
+  keywords?: string;
+  /** Только путь, например "/remont-mebeli/". Canonical собирается из него. */
+  canonical?: string;
+  noindex?: boolean;
+  /** Хлебные крошки: рисуются и уходят в BreadcrumbList. */
+  breadcrumb?: { name: string; href: string }[];
+  /** Дополнительные узлы schema.org к @graph страницы. */
+  schema?: unknown[];
+  ogImage?: string;
+  /** На странице заявки липкая полоса не нужна: форма и так на экране. */
+  hideStickyCta?: boolean;
+}
+
+const {
+  title,
+  description,
+  keywords,
+  canonical = Astro.url.pathname,
+  noindex = false,
+  breadcrumb = [],
+  schema = [],
+  ogImage = '/og.jpg',
+  hideStickyCta = false,
+} = Astro.props;
+
+const origin = originOf(Astro.site);
+const canonicalUrl = new URL(canonical, Astro.site).toString();
+
+const nodes = [
+  localBusiness(origin),
+  webSite(origin),
+  breadcrumb.length > 1 ? breadcrumbs(origin, breadcrumb) : null,
+  ...schema,
+];
+---
+
+<!doctype html>
+<html lang="ru" prefix="og: https://ogp.me/ns#">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {keywords && <meta name="keywords" content={keywords} />}
+    <link rel="canonical" href={canonicalUrl} />
+    <meta
+      name="robots"
+      content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'}
+    />
+
+    <meta name="theme-color" content="#eef1f3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16151a" media="(prefers-color-scheme: dark)" />
+    <meta name="format-detection" content="telephone=yes" />
+    <meta name="geo.region" content="RU-ULY" />
+    <meta name="geo.placename" content={site.locality} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.brand.name} />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={new URL(ogImage, Astro.site).toString()} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <!-- Golos держит и текст, и заголовки, поэтому предзагружается одна
+         кириллическая подрезка: латиница на русской странице почти не нужна,
+         а моно подхватывается позже — им набраны только лейблы. -->
+    <link rel="preload" href="/fonts/golos-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
+
+    <script type="application/ld+json" set:html={graph(nodes)} is:inline />
+
+    <slot name="head" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">К основному содержанию</a>
+
+    <Header />
+
+    {breadcrumb.length > 1 && <Breadcrumbs trail={breadcrumb} />}
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <Footer />
+
+    {!hideStickyCta && <StickyCta />}
+
+    {
+      site.metrikaId && (
+        <script is:inline define:vars={{ id: site.metrikaId }}>
+          {`(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+          m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}
+          k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+          (window,document,"script","https://mc.yandex.ru/metrika/tag.js","ym");
+          ym(id,"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true});`}
+        </script>
+      )
+    }
+  </body>
+</html>

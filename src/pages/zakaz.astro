@@ -1,0 +1,62 @@
+---
+import Base from '~/layouts/Base.astro';
+import TaskForm from '~/components/TaskForm.astro';
+import Steps from '~/components/Steps.astro';
+import RelatedLinks from '~/components/RelatedLinks.astro';
+import { services } from '~/data/nav';
+
+const title = 'Оставить заявку — Мастерская Архангельское, Ульяновская область';
+const description =
+  'Заявка в мастерскую: текстом, голосовым сообщением, в WhatsApp, Telegram, по телефону или на почту. Опишите деталь и количество или пришлите фото — ответим с ценой и сроком.';
+
+const breadcrumb = [
+  { name: 'Главная', href: '/' },
+  { name: 'Заявка', href: '/zakaz/' },
+];
+---
+
+<Base
+  title={title}
+  description={description}
+  keywords="заявка в мастерскую, заказать фурнитуру Ульяновская область, заказать деталь по образцу, вызвать мастера Ульяновск, заказ мебели на заказ"
+  canonical="/zakaz/"
+  breadcrumb={breadcrumb}
+  hideStickyCta
+>
+  <section>
+    <div class="wrap" style="padding-block:var(--sp-6) var(--section-y-md)">
+      <div class="eyebrow">Приём заказов</div>
+      <h1>Оставить заявку</h1>
+      <p class="lead">
+        Как удобнее: напишите текстом, надиктуйте голосом или позвоните. Фото детали ускоряет ответ
+        сильнее всего — по нему сразу видно, что нужно.
+      </p>
+    </div>
+  </section>
+
+  <section class="warmbg">
+    <div class="wrap pad-s">
+      <TaskForm />
+      <p class="note">
+        Что полезно указать: что за деталь или работа, размеры, количество, к какому сроку. Если
+        названия детали не знаете — пришлите фото или привезите образец.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap pad-s">
+      <h2>Что дальше</h2>
+      <Steps />
+    </div>
+  </section>
+
+  <section class="warmbg">
+    <div class="wrap pad-s">
+      <h2>Что можно заказать</h2>
+      <div style="margin-block-start:var(--sp-6)">
+        <RelatedLinks links={services} />
+      </div>
+    </div>
+  </section>
+</Base>

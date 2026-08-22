@@ -1,0 +1,31 @@
+---
+import { machines } from '~/data/machines';
+
+/**
+ * Карточки станков со схемами.
+ *
+ * Карточка — кнопка: нажатие раскрывает её. Схема прорисовывается по
+ * stroke-dashoffset при попадании в вид (см. scripts/machines.ts), поэтому
+ * в разметке она лежит целиком — без JS видна просто как чертёж.
+ */
+---
+
+<div class="mgrid">
+  {
+    machines.map((m) => (
+      <button class="m" type="button" id={m.id} data-name={m.name} aria-expanded="false">
+        <svg viewBox={m.viewBox} role="img" aria-label={m.name} set:html={m.svg} />
+        <span class="meta">
+          <i>{m.no}</i>
+          <b>{m.name}</b>
+          <span class="more">подробнее</span>
+        </span>
+        <span class="can">{m.can}</span>
+        <span class="go">
+          Заказать эту работу
+          <span aria-hidden="true">→</span>
+        </span>
+      </button>
+    ))
+  }
+</div>

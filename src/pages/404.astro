@@ -1,0 +1,37 @@
+---
+import Base from '~/layouts/Base.astro';
+import RelatedLinks from '~/components/RelatedLinks.astro';
+import { services, primaryNav } from '~/data/nav';
+import { site } from '~/data/site';
+---
+
+<Base
+  title="Страница не найдена — Мастерская Архангельское"
+  description="Такой страницы нет. Посмотрите услуги мастерской или напишите — ответим и найдём нужное."
+  canonical="/404/"
+  noindex
+>
+  <section>
+    <div class="wrap" style="padding-block:var(--sp-6) var(--section-y)">
+      <div class="eyebrow">404</div>
+      <h1>Такой страницы нет</h1>
+      <p class="lead">
+        Возможно, адрес изменился. Ниже — всё, что мастерская делает; если ищете конкретную деталь,
+        напишите или пришлите фото, опознаем по снимку.
+      </p>
+      <div class="acts">
+        <a class="btn" href="/zakaz/">Оставить заявку</a>
+        <a class="btn line" href={site.whatsapp} rel="noopener">Написать в WhatsApp</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="warmbg">
+    <div class="wrap pad-s">
+      <h2>Работы</h2>
+      <div style="margin-block-start:var(--sp-6)">
+        <RelatedLinks links={[...services, ...primaryNav]} />
+      </div>
+    </div>
+  </section>
+</Base>

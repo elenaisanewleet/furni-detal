@@ -1,0 +1,18 @@
+---
+import { stockGroups } from '~/data/stock';
+---
+
+<div class="groups">
+  {
+    stockGroups.map((g) => (
+      <div class="group">
+        <b>{g.title}</b>
+        <ul>
+          {g.items.map((i) => (
+            <li>{i}</li>
+          ))}
+        </ul>
+      </div>
+    ))
+  }
+</div>

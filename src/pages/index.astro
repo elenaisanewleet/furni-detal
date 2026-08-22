@@ -1,0 +1,167 @@
+---
+import { Image } from 'astro:assets';
+
+import Base from '~/layouts/Base.astro';
+import TaskForm from '~/components/TaskForm.astro';
+import Steps from '~/components/Steps.astro';
+import StockGroups from '~/components/StockGroups.astro';
+import { services as serviceNav } from '~/data/nav';
+import { services } from '~/data/services';
+import { site } from '~/data/site';
+
+import hero from '~/assets/ref-01.jpg';
+import stage from '~/assets/ref-02.jpg';
+
+const title =
+  'Мебельная фурнитура, металлические узлы и мебель на заказ — Мастерская Архангельское, Ульяновская область';
+const description =
+  'Мастерская в селе Архангельское: фурнитура и крепёж поштучно и партиями, металлические узлы по образцу, мебель из дерева на заказ, ремонт мебели, распил и присадка по размерам, заточка. Заявка в WhatsApp, Telegram или голосом.';
+---
+
+<Base
+  title={title}
+  description={description}
+  keywords="мебельная фурнитура Ульяновск, фурнитура Ульяновская область, крепёж партиями, металлические узлы на заказ, мебель на заказ Ульяновская область, ремонт мебели, замена фурнитуры, распил по размерам, присадка, заточка ножей, мастерская село Архангельское"
+  canonical="/"
+>
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">Приём заказов · {site.region}</div>
+        <h1>Нужна деталь или работа по дереву и металлу — <em>сделаем</em></h1>
+        <p class="lead">
+          Подбираем фурнитуру и крепёж по образцу, делаем металлические узлы серией, ремонтируем
+          мебель, пилим и сверлим по размерам, точим инструмент. Пришлите фото детали или скажите
+          голосом, что нужно — ответим с ценой и сроком.
+        </p>
+        <div class="acts">
+          <a class="btn" href="/zakaz/">Оставить заявку</a>
+          <a class="btn line" href={site.whatsapp} rel="noopener">Написать в WhatsApp</a>
+          <a class="btn line tel" href={`tel:${site.phone.tel}`}>{site.phone.label}</a>
+        </div>
+      </div>
+
+      {/* Фотографий мастерской в публикацию нет. Это 3D-реконструкция,
+          и подпись говорит об этом прямо, чтобы снимок не читался как
+          фотография помещения. */}
+      <figure>
+        <Image
+          src={hero}
+          alt="3D-реконструкция мастерской: станки, верстак и склад фурнитуры"
+          widths={[480, 720, 960]}
+          sizes="(min-width: 62.5rem) 45vw, 100vw"
+          loading="eager"
+          fetchpriority="high"
+        />
+        <figcaption>3D-реконструкция: станки, верстак, склад фурнитуры</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <div class="band">
+    <div class="wrap">
+      {serviceNav.map((s) => <a href={s.href}>{s.label}</a>)}
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap pad">
+      <h2>Что заказывают</h2>
+      <p class="sub">
+        Шесть направлений работы, определитель детали и станки. Цену считаем по задаче — опишите,
+        что нужно, и получите ответ с ценой и сроком.
+      </p>
+
+      <div class="hub">
+        {
+          services.map((s) => (
+            <a class="h-card" href={`/${s.slug}/`}>
+              <i>{s.hubNo}</i>
+              <b>{s.label}</b>
+              <p>{s.hubText}</p>
+              <u>
+                Подробнее <span aria-hidden="true">→</span>
+              </u>
+            </a>
+          ))
+        }
+
+        <a class="h-card wide" href="/podbor-detali/">
+          <i>Определитель</i>
+          <b>Не знаете, как называется деталь</b>
+          <p>
+            Найдите по месту, по своим словам или по тому, что сломалось: петля, направляющая,
+            минификс, полкодержатель. Со схемами и списком, что сфотографировать.
+          </p>
+          <u>Открыть определитель <span aria-hidden="true">→</span></u>
+        </a>
+
+        <a class="h-card" href="/stanki/">
+          <i>07</i>
+          <b>Станки и оснастка</b>
+          <p>Что стоит в мастерской и какие операции на этом можно сделать.</p>
+          <u>Смотреть станки <span aria-hidden="true">→</span></u>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="warmbg">
+    <div class="wrap pad">
+      <h2>Как заказать</h2>
+      <p class="sub">Три шага. Заявку можно отправить текстом, голосом или позвонить.</p>
+      <Steps />
+      <div style="margin-block-start:var(--sp-7)">
+        <TaskForm />
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap pad">
+      <h2>Фурнитура и крепёж на складе</h2>
+      <p class="sub">
+        Склад разобран по типам и размерам. Наличие лучше уточнить перед поездкой: напишите, что
+        именно нужно, или пришлите фото детали.
+      </p>
+      <StockGroups />
+      <p class="note">
+        <a href="/furnitura-i-krepezh/">Подробнее о подборе фурнитуры и крепежа →</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="warmbg">
+    <div class="wrap pad">
+      <h2>Мастерская в 3D</h2>
+      <p class="sub">
+        Мастерская собрана в 3D, чтобы показать оборудование и склад: какие станки стоят, что на них
+        можно сделать, где какие детали лежат.
+      </p>
+
+      <a class="stage3d" href="/masterskaya-3d/">
+        <Image
+          src={stage}
+          alt="3D-модель мастерской: станки, верстак, склад"
+          widths={[720, 1080, 1440]}
+          sizes="(min-width: 75rem) 1200px, 100vw"
+          loading="lazy"
+        />
+        <span class="veil">
+          <span class="lab">Открыть 3D-модель</span>
+          <span class="sub2">
+            Станки, верстак, склад фурнитуры и фасовка — 12 видов камеры и зоны с описаниями
+          </span>
+        </span>
+      </a>
+
+      <a class="stage3d row" href="/katalog-3d/">
+        <span class="t">
+          <b>Каталог объектов мастерской</b>
+          <span>Станки и приводы, верстак и оснастка, крепёж и фурнитура, хранение</span>
+        </span>
+        <span class="lab">Открыть каталог</span>
+      </a>
+    </div>
+  </section>
+</Base>

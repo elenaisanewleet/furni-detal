@@ -1,0 +1,125 @@
+---
+import Base from '~/layouts/Base.astro';
+import TaskForm from '~/components/TaskForm.astro';
+import Steps from '~/components/Steps.astro';
+import Faq from '~/components/Faq.astro';
+import RelatedLinks from '~/components/RelatedLinks.astro';
+
+import { services, bySlug, serviceHref, priceNote } from '~/data/services';
+import { machineById } from '~/data/machines';
+import { site } from '~/data/site';
+import { service as serviceSchema, faqPage } from '~/lib/schema';
+import { originOf } from '~/lib/origin';
+
+/**
+ * Шесть страниц услуг из одного шаблона.
+ *
+ * Структура у них общая, различается только содержимое — оно лежит
+ * в data/services.ts. Так шаблон нельзя починить на одной странице и
+ * забыть на пяти остальных.
+ */
+export function getStaticPaths() {
+  return services.map((s) => ({ params: { service: s.slug }, props: { slug: s.slug } }));
+}
+
+const { slug } = Astro.props;
+const s = bySlug(slug)!;
+
+const origin = originOf(Astro.site);
+const url = serviceHref(s.slug);
+
+const machines = s.machines.map((id) => machineById(id)!).filter(Boolean);
+const related = s.related.map((r) => {
+  const t = bySlug(r)!;
+  return { href: serviceHref(t.slug), label: t.label };
+});
+
+const breadcrumb = [
+  { name: 'Главная', href: '/' },
+  { name: s.label, href: url },
+];
+
+const schema = [
+  serviceSchema(origin, {
+    name: s.schemaName,
+    serviceType: s.serviceType,
+    description: s.description,
+    url,
+  }),
+  faqPage(s.faq),
+];
+---
+
+<Base
+  title={s.title}
+  description={s.description}
+  keywords={s.keywords}
+  canonical={url}
+  breadcrumb={breadcrumb}
+  schema={schema}
+>
+  <section>
+    <div class="wrap" style="padding-block:var(--sp-6) var(--section-y-md)">
+      <div class="eyebrow">{site.region} · {site.locality}</div>
+      <h1>{s.h1}</h1>
+      <p class="lead">{s.lead}</p>
+      <div class="acts">
+        <a class="btn" href="#zayavka">Оставить заявку</a>
+        <a class="btn line" href={site.whatsapp} rel="noopener">Написать в WhatsApp</a>
+        <a class="btn line tel" href={`tel:${site.phone.tel}`}>{site.phone.label}</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="warmbg">
+    <div class="wrap pad-s">
+      <h2>Что входит</h2>
+      <ul class="ul-2" style="margin-block-start:var(--sp-6)">
+        {s.includes.map((i) => <li>{i}</li>)}
+      </ul>
+      <p class="note">{priceNote}</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap pad-s">
+      <h2>На каком оборудовании</h2>
+      <p class="sub">
+        Работа идёт на этих станках. Схемы всех станков и операции по каждому — на странице <a
+          href="/stanki/">станки мастерской</a
+        >.
+      </p>
+      <RelatedLinks
+        links={machines.map((m) => ({ href: `/stanki/#${m.id}`, label: m.name }))}
+      />
+    </div>
+  </section>
+
+  <section class="warmbg">
+    <div class="wrap pad-s">
+      <h2>Как заказать</h2>
+      <Steps />
+      <div style="margin-block-start:var(--sp-7)">
+        <TaskForm topic={s.topic} />
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap pad-s">
+      <h2>Вопросы и ответы</h2>
+      <div style="margin-block-start:var(--sp-6)">
+        <Faq items={s.faq} />
+      </div>
+    </div>
+  </section>
+
+  <section class="warmbg">
+    <div class="wrap pad-s">
+      <h2>Другие работы</h2>
+      <div style="margin-block-start:var(--sp-6)">
+        <RelatedLinks links={related} />
+      </div>
+    </div>
+  </section>
+</Base>
